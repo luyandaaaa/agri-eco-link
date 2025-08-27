@@ -48,16 +48,15 @@ export default function FarmerDashboard() {
   };
 
   const sidebarItems = [
-    { icon: Home, label: "Dashboard", active: true },
-    { icon: Package, label: "My Produce" },
-    { icon: ShoppingCart, label: "Orders & Earnings" },
-    { icon: Scan, label: "AR Scanner" },
-    { icon: Trophy, label: "Gamification" },
-    { icon: Truck, label: "Delivery Matching" },
-    { icon: MessageSquare, label: "Community Forum" },
-    { icon: BookOpen, label: "Education Hub" },
-    { icon: User, label: "Profile & Wallet" },
-    { icon: Settings, label: "Settings" },
+    { icon: Home, label: "Dashboard", path: "/farmer-dashboard", active: true },
+    { icon: Package, label: "My Produce", path: "/farmer/my-produce" },
+    { icon: ShoppingCart, label: "Orders & Earnings", path: "/farmer/orders-earnings" },
+    { icon: Trophy, label: "Gamification", path: "/farmer/gamification" },
+    { icon: Truck, label: "Delivery Matching", path: "/farmer/delivery-matching" },
+    { icon: MessageSquare, label: "Community Forum", path: "/farmer/community-forum" },
+    { icon: BookOpen, label: "Education Hub", path: "/farmer/education-hub" },
+    { icon: User, label: "Profile & Wallet", path: "/farmer/profile-wallet" },
+    { icon: Settings, label: "Settings", path: "/farmer/settings" },
   ];
 
   return (
