@@ -12,7 +12,7 @@ import NotFound from "./pages/NotFound";
 // Farmer Pages
 import MyProduce from "./pages/farmer/MyProduce";
 import OrdersEarnings from "./pages/farmer/OrdersEarnings";
-import Gamification from "./pages/farmer/Gamification";
+import CropHealthCenter from "./pages/farmer/CropHealthCenter";
 import DeliveryMatching from "./pages/farmer/DeliveryMatching";
 import CommunityForum from "./pages/farmer/CommunityForum";
 import EducationHub from "./pages/farmer/EducationHub";
@@ -51,7 +51,7 @@ const App = () => (
           <Route path="/farmer-dashboard" element={<FarmerDashboard />} />
           <Route path="/farmer/my-produce" element={<MyProduce />} />
           <Route path="/farmer/orders-earnings" element={<OrdersEarnings />} />
-          <Route path="/farmer/gamification" element={<Gamification />} />
+          <Route path="/farmer/crop-health" element={<CropHealthCenter />} />
           <Route path="/farmer/delivery-matching" element={<DeliveryMatching />} />
           <Route path="/farmer/community-forum" element={<CommunityForum />} />
           <Route path="/farmer/education-hub" element={<EducationHub />} />
