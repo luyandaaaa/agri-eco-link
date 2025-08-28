@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { ConsumerLayout } from "@/components/layouts/ConsumerLayout";
 import { 
   Search,
   ShoppingCart, 
@@ -44,15 +45,6 @@ export default function ConsumerDashboard() {
     navigate("/");
   };
 
-  const sidebarItems = [
-    { icon: ShoppingCart, label: "Marketplace", active: true },
-    { icon: Scan, label: "Crop Analysis" },
-    { icon: Trophy, label: "FarmRewards" },
-    { icon: MessageSquare, label: "Community" },
-    { icon: Sparkles, label: "AI Features" },
-    { icon: ShoppingCart, label: "My Orders" },
-    { icon: User, label: "My Profile" },
-  ];
 
   const featuredProducts = [
     {
@@ -102,39 +94,7 @@ export default function ConsumerDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-64 bg-card border-r shadow-card">
-        <div className="p-6 border-b">
-          <h1 className="text-xl font-bold gradient-hero bg-clip-text text-transparent">
-            Farm2City
-          </h1>
-          <p className="text-sm text-muted-foreground">Consumer Portal</p>
-        </div>
-
-        <nav className="p-4 space-y-2">
-          {sidebarItems.map((item) => (
-            <Button
-              key={item.label}
-              variant={item.active ? "default" : "ghost"}
-              className="w-full justify-start transition-smooth"
-            >
-              <item.icon className="h-4 w-4 mr-3" />
-              {item.label}
-            </Button>
-          ))}
-        </nav>
-
-        <div className="absolute bottom-4 left-4 right-4">
-          <Button variant="outline" className="w-full justify-start" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-3" />
-            Logout
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="ml-64 p-6">
+    <ConsumerLayout currentPage="Dashboard">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome, {consumer.name}! 🛒</h1>
@@ -305,7 +265,6 @@ export default function ConsumerDashboard() {
             </CardContent>
           </Card>
         </div>
-      </div>
-    </div>
+    </ConsumerLayout>
   );
 }

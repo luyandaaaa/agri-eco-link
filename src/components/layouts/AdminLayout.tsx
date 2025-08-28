@@ -1,26 +1,22 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { EmergencyPanicButton } from "@/components/EmergencyPanicButton";
 import { 
-  Home, 
-  Package, 
-  ShoppingCart, 
-  Trophy, 
-  Truck, 
+  Users, 
+  FileText, 
   MessageSquare, 
-  BookOpen, 
-  User, 
+  BarChart3, 
+  Shield, 
   Settings,
   LogOut
 } from "lucide-react";
 
-interface FarmerLayoutProps {
+interface AdminLayoutProps {
   children: React.ReactNode;
   currentPage: string;
 }
 
-export function FarmerLayout({ children, currentPage }: FarmerLayoutProps) {
+export function AdminLayout({ children, currentPage }: AdminLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,7 +24,7 @@ export function FarmerLayout({ children, currentPage }: FarmerLayoutProps) {
     const token = localStorage.getItem("farm2city_token");
     const role = localStorage.getItem("farm2city_role");
     
-    if (!token || role !== "farmer") {
+    if (!token || role !== "admin") {
       navigate("/");
     }
   }, [navigate]);
@@ -40,15 +36,12 @@ export function FarmerLayout({ children, currentPage }: FarmerLayoutProps) {
   };
 
   const sidebarItems = [
-    { icon: Home, label: "Dashboard", path: "/farmer-dashboard" },
-    { icon: Package, label: "My Produce", path: "/farmer/my-produce" },
-    { icon: ShoppingCart, label: "Orders & Earnings", path: "/farmer/orders-earnings" },
-    { icon: Trophy, label: "Gamification", path: "/farmer/gamification" },
-    { icon: Truck, label: "Delivery Matching", path: "/farmer/delivery-matching" },
-    { icon: MessageSquare, label: "Community Forum", path: "/farmer/community-forum" },
-    { icon: BookOpen, label: "Education Hub", path: "/farmer/education-hub" },
-    { icon: User, label: "Profile & Wallet", path: "/farmer/profile-wallet" },
-    { icon: Settings, label: "Settings", path: "/farmer/settings" },
+    { icon: Users, label: "User Management", path: "/admin/user-management" },
+    { icon: FileText, label: "Farmer Applications", path: "/admin/farmer-applications" },
+    { icon: MessageSquare, label: "Dispute Resolution", path: "/admin/dispute-resolution" },
+    { icon: BarChart3, label: "Analytics", path: "/admin/analytics" },
+    { icon: Shield, label: "Security", path: "/admin/security" },
+    { icon: Settings, label: "Settings", path: "/admin/settings" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -58,12 +51,12 @@ export function FarmerLayout({ children, currentPage }: FarmerLayoutProps) {
       {/* Sidebar */}
       <div className="fixed left-0 top-0 h-full w-64 bg-card border-r shadow-card">
         <div className="p-6 border-b">
-          <Link to="/farmer-dashboard">
+          <Link to="/admin-dashboard">
             <h1 className="text-xl font-bold gradient-hero bg-clip-text text-transparent">
               Farm2City
             </h1>
           </Link>
-          <p className="text-sm text-muted-foreground">Farmer Portal</p>
+          <p className="text-sm text-muted-foreground">Admin Portal</p>
         </div>
 
         <nav className="p-4 space-y-2">
@@ -80,8 +73,7 @@ export function FarmerLayout({ children, currentPage }: FarmerLayoutProps) {
           ))}
         </nav>
 
-        <div className="absolute bottom-4 left-4 right-4 space-y-2">
-          <EmergencyPanicButton className="w-full justify-start" />
+        <div className="absolute bottom-4 left-4 right-4">
           <Button variant="outline" className="w-full justify-start" onClick={handleLogout}>
             <LogOut className="h-4 w-4 mr-3" />
             Logout

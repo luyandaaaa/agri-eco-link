@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { 
   Shield,
   Users, 
@@ -45,15 +46,6 @@ export default function AdminDashboard() {
     navigate("/");
   };
 
-  const sidebarItems = [
-    { icon: BarChart3, label: "Dashboard", active: true },
-    { icon: Users, label: "User Management" },
-    { icon: FileText, label: "Farmer Applications" },
-    { icon: MessageSquare, label: "Dispute Resolution" },
-    { icon: TrendingUp, label: "Analytics" },
-    { icon: Shield, label: "Security" },
-    { icon: Settings, label: "Settings" },
-  ];
 
   const pendingApplications = [
     { id: 1, name: "Thabo Mokoena", location: "Limpopo", crops: "Maize, Beans", status: "pending" },
@@ -62,39 +54,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-64 bg-card border-r shadow-card">
-        <div className="p-6 border-b">
-          <h1 className="text-xl font-bold gradient-hero bg-clip-text text-transparent">
-            Farm2City
-          </h1>
-          <p className="text-sm text-muted-foreground">Admin Portal</p>
-        </div>
-
-        <nav className="p-4 space-y-2">
-          {sidebarItems.map((item) => (
-            <Button
-              key={item.label}
-              variant={item.active ? "default" : "ghost"}
-              className="w-full justify-start transition-smooth"
-            >
-              <item.icon className="h-4 w-4 mr-3" />
-              {item.label}
-            </Button>
-          ))}
-        </nav>
-
-        <div className="absolute bottom-4 left-4 right-4">
-          <Button variant="outline" className="w-full justify-start" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-3" />
-            Logout
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="ml-64 p-6">
+    <AdminLayout currentPage="Dashboard">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Admin Dashboard 🛡️</h1>
@@ -273,7 +233,6 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </div>
+    </AdminLayout>
   );
 }

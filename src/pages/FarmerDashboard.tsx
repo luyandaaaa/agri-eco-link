@@ -3,19 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { FarmerLayout } from "@/components/layouts/FarmerLayout";
 import { 
-  Home, 
   Package, 
   ShoppingCart, 
   Scan, 
   Trophy, 
-  Truck, 
-  MessageSquare, 
-  BookOpen, 
-  User, 
-  Settings,
-  AlertTriangle,
-  LogOut,
   Plus,
   TrendingUp,
   Wallet
@@ -47,56 +40,10 @@ export default function FarmerDashboard() {
     navigate("/");
   };
 
-  const sidebarItems = [
-    { icon: Home, label: "Dashboard", path: "/farmer-dashboard", active: true },
-    { icon: Package, label: "My Produce", path: "/farmer/my-produce" },
-    { icon: ShoppingCart, label: "Orders & Earnings", path: "/farmer/orders-earnings" },
-    { icon: Trophy, label: "Gamification", path: "/farmer/gamification" },
-    { icon: Truck, label: "Delivery Matching", path: "/farmer/delivery-matching" },
-    { icon: MessageSquare, label: "Community Forum", path: "/farmer/community-forum" },
-    { icon: BookOpen, label: "Education Hub", path: "/farmer/education-hub" },
-    { icon: User, label: "Profile & Wallet", path: "/farmer/profile-wallet" },
-    { icon: Settings, label: "Settings", path: "/farmer/settings" },
-  ];
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-64 bg-card border-r shadow-card">
-        <div className="p-6 border-b">
-          <h1 className="text-xl font-bold gradient-hero bg-clip-text text-transparent">
-            Farm2City
-          </h1>
-          <p className="text-sm text-muted-foreground">Farmer Portal</p>
-        </div>
-
-        <nav className="p-4 space-y-2">
-          {sidebarItems.map((item) => (
-            <Button
-              key={item.label}
-              variant={item.active ? "default" : "ghost"}
-              className="w-full justify-start transition-smooth"
-            >
-              <item.icon className="h-4 w-4 mr-3" />
-              {item.label}
-            </Button>
-          ))}
-        </nav>
-
-        <div className="absolute bottom-4 left-4 right-4 space-y-2">
-          <Button variant="destructive" className="w-full justify-start">
-            <AlertTriangle className="h-4 w-4 mr-3" />
-            Emergency Panic
-          </Button>
-          <Button variant="outline" className="w-full justify-start" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-3" />
-            Logout
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="ml-64 p-6">
+    <FarmerLayout currentPage="Dashboard">
+      <div className="space-y-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome back, {farmer.name}! 🌱</h1>
@@ -246,6 +193,6 @@ export default function FarmerDashboard() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </FarmerLayout>
   );
 }

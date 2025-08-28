@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { UssdAccess } from "@/components/UssdAccess";
 import { User, ShoppingCart, Shield, Phone, Leaf, Users, Star, Award } from "lucide-react";
 
 const Index = () => {
@@ -151,9 +152,7 @@ const Index = () => {
                 <p className="text-muted-foreground mb-4">
                   Access Farm2City features from any phone, even without internet.
                 </p>
-                <Button variant="outline" className="w-full">
-                  Dial *120*FARM#
-                </Button>
+                <UssdAccess className="w-full" />
               </CardContent>
             </Card>
           </div>
