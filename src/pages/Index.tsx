@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { UssdAccess } from "@/components/UssdAccess";
-import { User, ShoppingCart, Shield, Phone, Leaf, Users, Star, Award } from "lucide-react";
+import { Leaf } from "lucide-react";
+import freshProduceBg from "@/assets/fresh-produce-bg.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -53,9 +54,9 @@ const Index = () => {
     <div className="min-h-screen bg-background relative">
       {/* Background Image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
         style={{
-          backgroundImage: `url('/src/assets/farm-landscape-bg.jpg')`
+          backgroundImage: `url(${freshProduceBg})`
         }}
       />
       
@@ -81,80 +82,49 @@ const Index = () => {
             </p>
 
             {/* Role Selection Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <Card 
-                className="shadow-card transition-smooth hover:shadow-glow cursor-pointer group bg-card/90 backdrop-blur-sm"
-                onClick={() => handleRoleSelect("farmer")}
-              >
-                <CardHeader className="text-center">
-                  <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center group-hover:scale-110 transition-smooth">
-                    <User className="h-8 w-8 text-primary" />
-                  </div>
-                  <CardTitle className="text-2xl">🧑‍🌾 Farmer Portal</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Manage your produce, connect with buyers, and grow your farming business.
-                  </p>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• List and sell your produce</li>
-                    <li>• AI crop health monitoring</li>
-                    <li>• Smart delivery matching</li>
-                    <li>• Agricultural insights</li>
-                  </ul>
-                </CardContent>
-              </Card>
+            <div className="relative">
+              <div className="absolute inset-0 bg-card/80 backdrop-blur-sm rounded-2xl shadow-card"></div>
+              <div className="relative p-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <Card 
+                    className="shadow-card transition-smooth hover:shadow-glow cursor-pointer group bg-card/95 backdrop-blur-sm border-0"
+                    onClick={() => handleRoleSelect("farmer")}
+                  >
+                    <CardHeader className="text-center">
+                      <CardTitle className="text-2xl text-primary">Farmer Portal</CardTitle>
+                    </CardHeader>
+                  </Card>
 
-              <Card 
-                className="shadow-card transition-smooth hover:shadow-glow cursor-pointer group bg-card/90 backdrop-blur-sm"
-                onClick={() => handleRoleSelect("consumer")}
-              >
-                <CardHeader className="text-center">
-                  <div className="mx-auto mb-4 p-4 bg-secondary/10 rounded-full w-16 h-16 flex items-center justify-center group-hover:scale-110 transition-smooth">
-                    <ShoppingCart className="h-8 w-8 text-secondary" />
-                  </div>
-                  <CardTitle className="text-2xl">🛒 Consumer Portal</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Buy fresh, local produce directly from farmers in your area.
-                  </p>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Fresh local produce marketplace</li>
-                    <li>• Crop analysis & nutrition info</li>
-                    <li>• Meet your local farmers</li>
-                    <li>• AI-powered recommendations</li>
-                  </ul>
-                </CardContent>
-              </Card>
+                  <Card 
+                    className="shadow-card transition-smooth hover:shadow-glow cursor-pointer group bg-card/95 backdrop-blur-sm border-0"
+                    onClick={() => handleRoleSelect("consumer")}
+                  >
+                    <CardHeader className="text-center">
+                      <CardTitle className="text-2xl text-secondary">Consumer Portal</CardTitle>
+                    </CardHeader>
+                  </Card>
 
-              <Card 
-                className="shadow-card transition-smooth hover:shadow-glow cursor-pointer group bg-card/90 backdrop-blur-sm"
-                onClick={() => handleRoleSelect("admin")}
-              >
-                <CardHeader className="text-center">
-                  <div className="mx-auto mb-4 p-4 bg-accent/10 rounded-full w-16 h-16 flex items-center justify-center group-hover:scale-110 transition-smooth">
-                    <Shield className="h-8 w-8 text-accent" />
-                  </div>
-                  <CardTitle className="text-2xl">🧑‍💼 Admin Portal</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Manage the platform, verify farmers, and ensure smooth operations.
-                  </p>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• User management & verification</li>
-                    <li>• Dispute resolution</li>
-                    <li>• Platform analytics</li>
-                    <li>• System monitoring</li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
+                  <Card 
+                    className="shadow-card transition-smooth hover:shadow-glow cursor-pointer group bg-card/95 backdrop-blur-sm border-0"
+                    onClick={() => handleRoleSelect("admin")}
+                  >
+                    <CardHeader className="text-center">
+                      <CardTitle className="text-2xl text-accent">Admin Portal</CardTitle>
+                    </CardHeader>
+                  </Card>
+                </div>
 
-            {/* Offline Mode Button */}
-            <div className="mb-12">
-              <UssdAccess />
+                {/* Offline Mode Button */}
+                <div className="text-center">
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    className="bg-card/95 backdrop-blur-sm border-primary/20 hover:bg-primary/10"
+                  >
+                    Offline Mode (USSD)
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
