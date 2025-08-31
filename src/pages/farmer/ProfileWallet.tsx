@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
 import { 
   User, 
   Wallet, 
@@ -19,7 +20,9 @@ import {
   DollarSign,
   History,
   TrendingUp,
-  Plus
+  Plus,
+  Save,
+  X
 } from "lucide-react";
 import { FarmerLayout } from "@/components/layouts/FarmerLayout";
 

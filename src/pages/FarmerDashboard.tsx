@@ -100,7 +100,7 @@ export default function FarmerDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <Card className="shadow-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -112,7 +112,11 @@ export default function FarmerDashboard() {
               <p className="text-sm text-muted-foreground mb-4">
                 List new crops from your harvest to reach more buyers.
               </p>
-              <Button variant="hero" className="w-full">
+              <Button 
+                variant="hero" 
+                className="w-full"
+                onClick={() => navigate("/farmer/my-produce")}
+              >
                 Add Produce
               </Button>
             </CardContent>
@@ -129,28 +133,12 @@ export default function FarmerDashboard() {
               <p className="text-sm text-muted-foreground mb-4">
                 Use AI to check your crops for diseases and get treatment advice.
               </p>
-              <Button variant="secondary" className="w-full">
+              <Button 
+                variant="secondary" 
+                className="w-full"
+                onClick={() => navigate("/farmer/crop-health-center")}
+              >
                 Scan Crops
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-accent" />
-                Farm Rewards
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Complete challenges and earn points for platform benefits.
-              </p>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary">1,250 Points</Badge>
-              </div>
-              <Button variant="outline" className="w-full">
-                View Challenges
               </Button>
             </CardContent>
           </Card>

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
 import { 
   CheckCircle, 
   Clock, 
@@ -10,12 +11,14 @@ import {
   Wallet, 
   TrendingUp,
   Calendar,
-  Download
+  Download,
+  X
 } from "lucide-react";
 import { FarmerLayout } from "@/components/layouts/FarmerLayout";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function OrdersEarnings() {
-  const [orders] = useState([
+  const [orders, setOrders] = useState([
     {
       id: "#ORD-001",
       customer: "Sipho's Restaurant",
@@ -51,6 +54,43 @@ export default function OrdersEarnings() {
     totalEarnings: 12540.00,
     pendingPayments: 637.50
   });
+
+  const earningsData = [
+    { month: 'Jan', earnings: 2100 },
+    { month: 'Feb', earnings: 2400 },
+    { month: 'Mar', earnings: 2890 },
+    { month: 'Apr', earnings: 3420 },
+    { month: 'May', earnings: 3200 },
+    { month: 'Jun', earnings: 3800 }
+  ];
+
+  const handleAcceptOrder = (orderId) => {
+    setOrders(orders.map(order => 
+      order.id === orderId ? { ...order, status: 'confirmed' } : order
+    ));
+    toast({
+      title: "Order Accepted",
+      description: "Order has been confirmed and customer notified.",
+    });
+  };
+
+  const handleDeclineOrder = (orderId) => {
+    setOrders(orders.map(order => 
+      order.id === orderId ? { ...order, status: 'declined' } : order
+    ));
+    toast({
+      title: "Order Declined",
+      description: "Order has been declined and customer notified.",
+      variant: "destructive"
+    });
+  };
+
+  const handleTrackOrder = (orderId) => {
+    toast({
+      title: "Tracking Order",
+      description: "Opening delivery tracking interface...",
+    });
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -166,17 +206,30 @@ export default function OrdersEarnings() {
                         <div className="flex gap-2">
                           {order.status === 'pending' && (
                             <>
-                              <Button size="sm" variant="default">
+                              <Button 
+                                size="sm" 
+                                variant="default"
+                                onClick={() => handleAcceptOrder(order.id)}
+                              >
                                 <CheckCircle className="h-4 w-4 mr-1" />
                                 Accept
                               </Button>
-                              <Button size="sm" variant="destructive">
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => handleDeclineOrder(order.id)}
+                              >
+                                <X className="h-4 w-4 mr-1" />
                                 Decline
                               </Button>
                             </>
                           )}
                           {order.status === 'confirmed' && (
-                            <Button size="sm" variant="secondary">
+                            <Button 
+                              size="sm" 
+                              variant="secondary"
+                              onClick={() => handleTrackOrder(order.id)}
+                            >
                               <Truck className="h-4 w-4 mr-1" />
                               Track
                             </Button>
@@ -197,8 +250,25 @@ export default function OrdersEarnings() {
                   <CardTitle>Monthly Earnings Trend</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-64 flex items-center justify-center text-muted-foreground">
-                    [Earnings Chart Placeholder]
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={earningsData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip 
+                          formatter={(value) => [`R${value}`, 'Earnings']}
+                          labelFormatter={(label) => `Month: ${label}`}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="earnings" 
+                          stroke="hsl(var(--primary))" 
+                          strokeWidth={2}
+                          dot={{ fill: "hsl(var(--primary))" }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
                   </div>
                 </CardContent>
               </Card>

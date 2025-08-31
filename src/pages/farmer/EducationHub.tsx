@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { toast } from "@/hooks/use-toast";
 import { 
   BookOpen, 
   Video, 
@@ -19,9 +20,28 @@ import {
   Star
 } from "lucide-react";
 import { FarmerLayout } from "@/components/layouts/FarmerLayout";
+import { ChatBot } from "@/components/ChatBot";
 
 export default function EducationHub() {
   const [selectedLanguage, setSelectedLanguage] = useState("English");
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+
+  const handleStartCourse = (courseId) => {
+    if (!enrolledCourses.includes(courseId)) {
+      setEnrolledCourses([...enrolledCourses, courseId]);
+      toast({
+        title: "Course Started",
+        description: "You've successfully enrolled in this course!",
+      });
+    }
+  };
+
+  const handleDownloadCertificate = (courseTitle) => {
+    toast({
+      title: "Certificate Generated",
+      description: `Certificate for "${courseTitle}" is being prepared for download.`,
+    });
+  };
   
   const [courses] = useState([
     {
@@ -434,6 +454,9 @@ export default function EducationHub() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Chatbot */}
+      <ChatBot />
     </FarmerLayout>
   );
 }

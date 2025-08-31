@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
 import { 
   Truck, 
   MapPin, 
@@ -90,6 +91,27 @@ export default function DeliveryMatching() {
     contactPhone: "+27 82 999 8888",
     specialInstructions: "Call when arriving, dogs on property"
   });
+
+  const handleTrackDelivery = (deliveryId) => {
+    toast({
+      title: "Tracking Delivery",
+      description: "Opening real-time delivery tracking...",
+    });
+  };
+
+  const handleRequestQuote = (driverId) => {
+    toast({
+      title: "Quote Requested",
+      description: "Quote request sent to delivery partner. You'll receive a response shortly.",
+    });
+  };
+
+  const handleSavePickupSettings = () => {
+    toast({
+      title: "Settings Saved",
+      description: "Pickup settings have been saved successfully.",
+    });
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -197,7 +219,11 @@ export default function DeliveryMatching() {
                           </div>
                           <p className="text-sm text-muted-foreground">Order: {delivery.order}</p>
                         </div>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleTrackDelivery(delivery.id)}
+                        >
                           <Navigation className="h-4 w-4 mr-1" />
                           Track
                         </Button>
@@ -280,7 +306,12 @@ export default function DeliveryMatching() {
                         </div>
 
                         <div className="flex gap-2">
-                          <Button variant="default" size="sm" className="flex-1">
+                          <Button 
+                            variant="default" 
+                            size="sm" 
+                            className="flex-1"
+                            onClick={() => handleRequestQuote(driver.id)}
+                          >
                             Request Quote
                           </Button>
                           <Button variant="outline" size="sm">
@@ -348,7 +379,10 @@ export default function DeliveryMatching() {
                   />
                 </div>
 
-                <Button className="w-full md:w-auto">
+                <Button 
+                  className="w-full md:w-auto"
+                  onClick={handleSavePickupSettings}
+                >
                   Save Pickup Settings
                 </Button>
               </CardContent>

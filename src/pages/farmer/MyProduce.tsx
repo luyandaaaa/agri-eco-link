@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
 import { 
   Plus, 
   Edit, 
@@ -12,9 +14,14 @@ import {
   Upload, 
   Package, 
   TrendingUp,
-  AlertTriangle 
+  AlertTriangle,
+  Save,
+  X
 } from "lucide-react";
 import { FarmerLayout } from "@/components/layouts/FarmerLayout";
+import spinachImage from "@/assets/products/spinach.jpg";
+import heritageImage from "@/assets/products/heritage-tomatoes.jpg";
+import cornImage from "@/assets/products/sweet-corn.jpg";
 
 export default function MyProduce() {
   const [products, setProducts] = useState([
@@ -26,7 +33,8 @@ export default function MyProduce() {
       unit: "kg",
       stock: 120,
       status: "active",
-      image: "🥬"
+      image: spinachImage,
+      description: "Fresh organic spinach grown without pesticides"
     },
     {
       id: 2,
@@ -36,7 +44,8 @@ export default function MyProduce() {
       unit: "kg",
       stock: 8,
       status: "low_stock",
-      image: "🍅"
+      image: heritageImage,
+      description: "Heirloom variety tomatoes with rich flavor"
     },
     {
       id: 3,
@@ -46,11 +55,79 @@ export default function MyProduce() {
       unit: "kg",
       stock: 200,
       status: "active",
-      image: "🌽"
+      image: cornImage,
+      description: "Sweet and crispy corn, freshly harvested"
     }
   ]);
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    category: "",
+    price: "",
+    unit: "",
+    stock: "",
+    description: "",
+    image: null
+  });
+
+  const handleAddProduct = () => {
+    if (!newProduct.name || !newProduct.price || !newProduct.stock) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const product = {
+      id: Date.now(),
+      name: newProduct.name,
+      category: newProduct.category,
+      price: parseFloat(newProduct.price),
+      unit: newProduct.unit,
+      stock: parseInt(newProduct.stock),
+      status: parseInt(newProduct.stock) < 10 ? "low_stock" : "active",
+      image: newProduct.image || spinachImage,
+      description: newProduct.description
+    };
+
+    setProducts([...products, product]);
+    setNewProduct({ name: "", category: "", price: "", unit: "", stock: "", description: "", image: null });
+    setShowAddForm(false);
+    toast({
+      title: "Success",
+      description: "Product added successfully!",
+    });
+  };
+
+  const handleEditProduct = (product) => {
+    setEditingProduct(product.id);
+  };
+
+  const handleSaveEdit = (productId) => {
+    setEditingProduct(null);
+    toast({
+      title: "Success", 
+      description: "Product updated successfully!",
+    });
+  };
+
+  const handleDeleteProduct = (productId) => {
+    setProducts(products.filter(p => p.id !== productId));
+    toast({
+      title: "Success",
+      description: "Product deleted successfully!",
+    });
+  };
+
+  const updateProduct = (productId, field, value) => {
+    setProducts(products.map(p => 
+      p.id === productId ? { ...p, [field]: value } : p
+    ));
+  };
 
   return (
     <FarmerLayout currentPage="My Produce">
@@ -141,28 +218,60 @@ export default function MyProduce() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name">Product Name</Label>
-                  <Input id="name" placeholder="e.g., Organic Carrots" />
+                  <Input 
+                    id="name" 
+                    placeholder="e.g., Organic Carrots"
+                    value={newProduct.name}
+                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="category">Category</Label>
-                  <Input id="category" placeholder="e.g., Root Vegetables" />
+                  <Input 
+                    id="category" 
+                    placeholder="e.g., Root Vegetables"
+                    value={newProduct.category}
+                    onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="price">Price per Unit</Label>
-                  <Input id="price" type="number" placeholder="0.00" />
+                  <Input 
+                    id="price" 
+                    type="number" 
+                    placeholder="0.00"
+                    value={newProduct.price}
+                    onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="unit">Unit</Label>
-                  <Input id="unit" placeholder="kg, bunch, dozen" />
+                  <Input 
+                    id="unit" 
+                    placeholder="kg, bunch, dozen"
+                    value={newProduct.unit}
+                    onChange={(e) => setNewProduct({...newProduct, unit: e.target.value})}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="stock">Stock Quantity</Label>
-                  <Input id="stock" type="number" placeholder="0" />
+                  <Input 
+                    id="stock" 
+                    type="number" 
+                    placeholder="0"
+                    value={newProduct.stock}
+                    onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="image">Upload Image</Label>
                   <div className="flex items-center gap-2">
-                    <Input id="image" type="file" accept="image/*" />
+                    <Input 
+                      id="image" 
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => setNewProduct({...newProduct, image: e.target.files?.[0] || null})}
+                    />
                     <Button variant="outline" size="sm">
                       <Upload className="h-4 w-4" />
                     </Button>
@@ -174,13 +283,15 @@ export default function MyProduce() {
                 <Textarea 
                   id="description" 
                   placeholder="Describe your produce, growing methods, harvest date..."
+                  value={newProduct.description}
+                  onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
                 />
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setShowAddForm(false)}>
                   Cancel
                 </Button>
-                <Button onClick={() => setShowAddForm(false)}>
+                <Button onClick={handleAddProduct}>
                   Add Produce
                 </Button>
               </div>
@@ -198,32 +309,112 @@ export default function MyProduce() {
               {products.map((product) => (
                 <div key={product.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-4">
-                    <div className="text-4xl">{product.image}</div>
-                    <div>
-                      <h3 className="font-semibold">{product.name}</h3>
-                      <p className="text-sm text-muted-foreground">{product.category}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant={product.status === 'active' ? 'default' : 'destructive'}>
-                          {product.status === 'active' ? 'Active' : 'Low Stock'}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">
-                          {product.stock} {product.unit} available
-                        </span>
-                      </div>
+                    <img 
+                      src={product.image} 
+                      alt={product.name}
+                      className="w-16 h-16 object-cover rounded-lg"
+                    />
+                    <div className="flex-1">
+                      {editingProduct === product.id ? (
+                        <div className="space-y-2">
+                          <Input 
+                            value={product.name}
+                            onChange={(e) => updateProduct(product.id, 'name', e.target.value)}
+                            className="font-semibold"
+                          />
+                          <Input 
+                            value={product.category}
+                            onChange={(e) => updateProduct(product.id, 'category', e.target.value)}
+                            className="text-sm"
+                          />
+                          <div className="flex gap-2">
+                            <Input 
+                              type="number"
+                              value={product.price}
+                              onChange={(e) => updateProduct(product.id, 'price', parseFloat(e.target.value))}
+                              className="w-24"
+                            />
+                            <Input 
+                              type="number"
+                              value={product.stock}
+                              onChange={(e) => updateProduct(product.id, 'stock', parseInt(e.target.value))}
+                              className="w-24"
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <h3 className="font-semibold">{product.name}</h3>
+                          <p className="text-sm text-muted-foreground">{product.category}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant={product.status === 'active' ? 'default' : 'destructive'}>
+                              {product.status === 'active' ? 'Active' : 'Low Stock'}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">
+                              {product.stock} {product.unit} available
+                            </span>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="font-bold">R{product.price}</p>
-                      <p className="text-sm text-muted-foreground">per {product.unit}</p>
-                    </div>
+                    {editingProduct !== product.id && (
+                      <div className="text-right">
+                        <p className="font-bold">R{product.price}</p>
+                        <p className="text-sm text-muted-foreground">per {product.unit}</p>
+                      </div>
+                    )}
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {editingProduct === product.id ? (
+                        <>
+                          <Button 
+                            variant="default" 
+                            size="sm"
+                            onClick={() => handleSaveEdit(product.id)}
+                          >
+                            <Save className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setEditingProduct(null)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEditProduct(product)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="destructive" size="sm">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteProduct(product.id)}>
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

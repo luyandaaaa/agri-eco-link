@@ -145,6 +145,77 @@ export function CropHealthScanner() {
     fileInputRef.current?.click();
   };
 
+  const triggerCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      });
+      
+      // Create video element to show camera feed
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.play();
+      
+      // Create a modal-like overlay for camera
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.9); z-index: 9999; display: flex;
+        flex-direction: column; align-items: center; justify-content: center;
+      `;
+      
+      video.style.cssText = 'max-width: 90%; max-height: 70%; border-radius: 8px;';
+      
+      const captureBtn = document.createElement('button');
+      captureBtn.textContent = 'Capture Photo';
+      captureBtn.style.cssText = `
+        margin-top: 20px; padding: 12px 24px; background: hsl(var(--primary));
+        color: white; border: none; border-radius: 6px; cursor: pointer;
+      `;
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Close';
+      closeBtn.style.cssText = `
+        margin-left: 10px; padding: 12px 24px; background: #666;
+        color: white; border: none; border-radius: 6px; cursor: pointer;
+      `;
+      
+      const buttonContainer = document.createElement('div');
+      buttonContainer.appendChild(captureBtn);
+      buttonContainer.appendChild(closeBtn);
+      
+      overlay.appendChild(video);
+      overlay.appendChild(buttonContainer);
+      document.body.appendChild(overlay);
+      
+      captureBtn.onclick = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(video, 0, 0);
+        
+        canvas.toBlob(async (blob) => {
+          if (blob) {
+            const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+            await handleImageUpload(file);
+          }
+        });
+        
+        stream.getTracks().forEach(track => track.stop());
+        document.body.removeChild(overlay);
+      };
+      
+      closeBtn.onclick = () => {
+        stream.getTracks().forEach(track => track.stop());
+        document.body.removeChild(overlay);
+      };
+      
+    } catch (error) {
+      toast.error('Camera access denied or not available');
+    }
+  };
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'Low': return 'text-primary';
@@ -200,12 +271,13 @@ export function CropHealthScanner() {
               Upload from Device
             </Button>
             <Button 
-              disabled={true}
+              onClick={triggerCamera}
+              disabled={isScanning}
               className="h-20 flex flex-col gap-2"
               variant="outline"
             >
               <Camera className="h-6 w-6" />
-              Take Photo (Coming Soon)
+              Take Photo
             </Button>
           </div>
           

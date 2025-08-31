@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/hooks/use-toast";
 import { 
   MessageSquare, 
   Users, 
@@ -14,12 +17,14 @@ import {
   Search,
   Tractor,
   Handshake,
-  Star
+  Star,
+  Send,
+  Heart
 } from "lucide-react";
 import { FarmerLayout } from "@/components/layouts/FarmerLayout";
 
 export default function CommunityForum() {
-  const [posts] = useState([
+  const [posts, setPosts] = useState([
     {
       id: 1,
       author: "Thabo Mokoena",
@@ -113,6 +118,71 @@ export default function CommunityForum() {
       description: "Complete drip irrigation setup for 1-hectare coverage"
     }
   ]);
+
+  const [newPost, setNewPost] = useState({
+    title: "",
+    content: "",
+    category: "",
+    tags: ""
+  });
+
+  const handleCreatePost = () => {
+    if (!newPost.title || !newPost.content) {
+      toast({
+        title: "Error",
+        description: "Please fill in title and content",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const post = {
+      id: Date.now(),
+      author: "Lindiwe Mthembu",
+      location: "Eastern Cape",
+      title: newPost.title,
+      content: newPost.content,
+      category: newPost.category || "General",
+      likes: 0,
+      replies: 0,
+      timeAgo: "Just now",
+      tags: newPost.tags.split(",").map(tag => tag.trim()).filter(Boolean)
+    };
+
+    setPosts([post, ...posts]);
+    setNewPost({ title: "", content: "", category: "", tags: "" });
+    toast({
+      title: "Post Created",
+      description: "Your post has been shared with the community!",
+    });
+  };
+
+  const handleLikePost = (postId) => {
+    setPosts(posts.map(post => 
+      post.id === postId ? { ...post, likes: post.likes + 1 } : post
+    ));
+  };
+
+  const handleRequestMentorship = (mentorName) => {
+    toast({
+      title: "Mentorship Request Sent",
+      description: `Your request has been sent to ${mentorName}. They will contact you soon.`,
+    });
+  };
+
+  const handleRequestRental = (toolName) => {
+    toast({
+      title: "Rental Request Sent",
+      description: `Your rental request for ${toolName} has been sent to the owner.`,
+    });
+  };
+
+  const handleJoinGroupOrder = (orderName) => {
+    toast({
+      title: "Joined Group Order",
+      description: `You've successfully joined the ${orderName} group order.`,
+    });
+  };
 
   return (
     <FarmerLayout currentPage="Community Forum">
