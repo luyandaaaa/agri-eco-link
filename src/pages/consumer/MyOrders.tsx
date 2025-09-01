@@ -106,11 +106,25 @@ export default function MyOrders() {
   };
 
   const trackOrder = (trackingNumber: string) => {
-    toast.success(`Tracking order ${trackingNumber}`);
+    toast.success(`Tracking order ${trackingNumber} - Status: In Transit, Expected: Tomorrow 2-4 PM`);
   };
 
   const reorderItems = (orderId: string) => {
-    toast.success("Items added to cart for reorder!");
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+      toast.success(`${order.items.length} items added to cart for reorder!`);
+    }
+  };
+
+  const viewInvoice = (orderId: string) => {
+    toast.success("Generating invoice... Download will start shortly.");
+    // Simulate invoice generation and download
+    setTimeout(() => {
+      const link = document.createElement('a');
+      link.href = 'data:text/plain;charset=utf-8,Invoice for Order ' + orderId;
+      link.download = `invoice-${orderId}.txt`;
+      link.click();
+    }, 1000);
   };
 
   const filterOrders = (status?: string) => {
@@ -241,6 +255,13 @@ export default function MyOrders() {
                           <Package className="h-4 w-4" />
                           Reorder
                         </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => viewInvoice(order.id)}
+                          className="flex items-center gap-2"
+                        >
+                          📄 Invoice
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -321,6 +342,13 @@ export default function MyOrders() {
                           >
                             <Package className="h-4 w-4" />
                             Reorder
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => viewInvoice(order.id)}
+                            className="flex items-center gap-2"
+                          >
+                            📄 Invoice
                           </Button>
                         </div>
                       </div>

@@ -228,7 +228,16 @@ export default function AIFeatures() {
                           {rec.action && (
                             <Button 
                               className="w-full"
-                              onClick={() => toast.success(`${rec.action} clicked!`)}
+                              onClick={() => {
+                                if (rec.action === "Add to Cart") {
+                                  toast.success(`${rec.title.split(' ')[0]} added to cart!`);
+                                } else if (rec.action === "View Recipe") {
+                                  // Show full recipe
+                                  toast.success("Opening full recipe...");
+                                } else {
+                                  toast.success(`${rec.action} clicked!`);
+                                }
+                              }}
                             >
                               {rec.action}
                             </Button>
@@ -452,7 +461,12 @@ export default function AIFeatures() {
                           <span>{meal.calories} cal</span>
                           <span>{meal.prep}</span>
                         </div>
-                        <Button size="sm" variant="outline" className="w-full mt-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-full mt-2"
+                          onClick={() => toast.success("Opening full recipe with ingredients and instructions...")}
+                        >
                           View Recipe
                         </Button>
                       </div>
@@ -519,7 +533,12 @@ export default function AIFeatures() {
                         </div>
                       </div>
                     ))}
-                    <Button className="w-full">Apply Optimizations</Button>
+                    <Button 
+                      className="w-full"
+                      onClick={() => toast.success("Optimizations applied! Updated items added to cart.")}
+                    >
+                      Apply Optimizations
+                    </Button>
                   </CardContent>
                 </Card>
 

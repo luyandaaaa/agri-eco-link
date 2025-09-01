@@ -19,6 +19,15 @@ import {
   Heart,
   Filter
 } from "lucide-react";
+import tomatoesImg from "@/assets/products/tomatoes.jpg";
+import carrotsImg from "@/assets/products/carrots.jpg";
+import lettuceImg from "@/assets/products/lettuce.jpg";
+import applesImg from "@/assets/products/apples.jpg";
+import cornImg from "@/assets/products/corn.jpg";
+import peppersImg from "@/assets/products/peppers.jpg";
+import spinachImg from "@/assets/products/spinach.jpg";
+import sweetCornImg from "@/assets/products/sweet-corn.jpg";
+import { toast } from "sonner";
 
 export default function ConsumerDashboard() {
   const navigate = useNavigate();
@@ -29,6 +38,8 @@ export default function ConsumerDashboard() {
     savedFarmers: 5,
     totalOrders: 23
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("all");
 
   useEffect(() => {
     const token = localStorage.getItem("farm2city_token");
@@ -45,8 +56,7 @@ export default function ConsumerDashboard() {
     navigate("/");
   };
 
-
-  const featuredProducts = [
+  const allProducts = [
     {
       id: 1,
       name: "Organic Baby Spinach",
@@ -56,7 +66,8 @@ export default function ConsumerDashboard() {
       distance: 9.2,
       rating: 4.8,
       reviews: 15,
-      image: "🥬"
+      image: spinachImg,
+      category: "leafy"
     },
     {
       id: 2,
@@ -67,31 +78,96 @@ export default function ConsumerDashboard() {
       distance: 12.5,
       rating: 4.9,
       reviews: 22,
-      image: "🍅"
+      image: tomatoesImg,
+      category: "fruits"
     },
     {
       id: 3,
-      name: "Free-Range Eggs",
-      farm: "Happy Hens Co-op",
-      price: 65.00,
-      unit: "dozen",
-      distance: 15.8,
-      rating: 4.7,
-      reviews: 8,
-      image: "🥚"
-    },
-    {
-      id: 4,
-      name: "Sweet Potatoes",
+      name: "Organic Carrots",
       farm: "Earth & Sky Farm",
       price: 28.90,
       unit: "kg",
       distance: 7.3,
       rating: 4.6,
       reviews: 12,
-      image: "🍠"
+      image: carrotsImg,
+      category: "root"
+    },
+    {
+      id: 4,
+      name: "Fresh Lettuce",
+      farm: "Valley Fresh",
+      price: 32.50,
+      unit: "kg",
+      distance: 11.2,
+      rating: 4.7,
+      reviews: 18,
+      image: lettuceImg,
+      category: "leafy"
+    },
+    {
+      id: 5,
+      name: "Red Apples",
+      farm: "Mountain View Orchard",
+      price: 52.00,
+      unit: "kg",
+      distance: 14.8,
+      rating: 4.8,
+      reviews: 25,
+      image: applesImg,
+      category: "fruits"
+    },
+    {
+      id: 6,
+      name: "Sweet Corn",
+      farm: "Golden Fields",
+      price: 45.00,
+      unit: "kg",
+      distance: 8.5,
+      rating: 4.9,
+      reviews: 20,
+      image: sweetCornImg,
+      category: "grains"
+    },
+    {
+      id: 7,
+      name: "Bell Peppers",
+      farm: "Colorful Gardens",
+      price: 48.50,
+      unit: "kg",
+      distance: 13.7,
+      rating: 4.6,
+      reviews: 14,
+      image: peppersImg,
+      category: "fruits"
+    },
+    {
+      id: 8,
+      name: "Fresh Corn",
+      farm: "Prairie Gold",
+      price: 35.00,
+      unit: "kg",
+      distance: 10.3,
+      rating: 4.5,
+      reviews: 16,
+      image: cornImg,
+      category: "grains"
     }
   ];
+
+  const filteredProducts = allProducts.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.farm.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = selectedFilter === "all" || product.category === selectedFilter;
+    return matchesSearch && matchesFilter;
+  }).slice(0, 8);
+
+  const addToCart = (productId: number) => {
+    const product = allProducts.find(p => p.id === productId);
+    if (product) {
+      toast.success(`${product.name} added to cart!`);
+    }
+  };
 
   return (
     <ConsumerLayout currentPage="Dashboard">
@@ -151,21 +227,56 @@ export default function ConsumerDashboard() {
         {/* Search and Filters */}
         <Card className="shadow-card mb-8">
           <CardContent className="p-6">
-            <div className="flex gap-4">
+            <div className="flex gap-4 mb-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input 
                   placeholder="Search for fresh produce..." 
                   className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <Button variant="outline" className="flex items-center gap-2">
-                <Filter className="h-4 w-4" />
-                Filters
-              </Button>
-              <Button variant="outline" className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 Nearby
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant={selectedFilter === "all" ? "default" : "outline"}
+                onClick={() => setSelectedFilter("all")}
+              >
+                All
+              </Button>
+              <Button 
+                size="sm" 
+                variant={selectedFilter === "fruits" ? "default" : "outline"}
+                onClick={() => setSelectedFilter("fruits")}
+              >
+                Fruits
+              </Button>
+              <Button 
+                size="sm" 
+                variant={selectedFilter === "leafy" ? "default" : "outline"}
+                onClick={() => setSelectedFilter("leafy")}
+              >
+                Leafy Greens
+              </Button>
+              <Button 
+                size="sm" 
+                variant={selectedFilter === "root" ? "default" : "outline"}
+                onClick={() => setSelectedFilter("root")}
+              >
+                Root Vegetables
+              </Button>
+              <Button 
+                size="sm" 
+                variant={selectedFilter === "grains" ? "default" : "outline"}
+                onClick={() => setSelectedFilter("grains")}
+              >
+                Grains
               </Button>
             </div>
           </CardContent>
@@ -175,11 +286,15 @@ export default function ConsumerDashboard() {
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-6">Fresh from Local Farms</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => (
+            {filteredProducts.map((product) => (
               <Card key={product.id} className="shadow-card transition-smooth hover:shadow-glow">
                 <CardContent className="p-0">
-                  <div className="aspect-square bg-gradient-primary rounded-t-lg flex items-center justify-center text-6xl">
-                    {product.image}
+                  <div className="aspect-square rounded-t-lg overflow-hidden">
+                    <img 
+                      src={product.image} 
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div className="p-4">
                     <h3 className="font-semibold mb-1">{product.name}</h3>
@@ -202,7 +317,12 @@ export default function ConsumerDashboard() {
                       <span className="text-sm text-muted-foreground">/ {product.unit}</span>
                     </div>
                     
-                    <Button variant="hero" className="w-full" size="sm">
+                    <Button 
+                      variant="hero" 
+                      className="w-full" 
+                      size="sm"
+                      onClick={() => addToCart(product.id)}
+                    >
                       Add to Cart
                     </Button>
                   </div>
@@ -215,53 +335,44 @@ export default function ConsumerDashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Scan className="h-5 w-5 text-primary" />
-                Crop Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Upload a photo to learn about nutritional value and find local suppliers.
-              </p>
-              <Button variant="secondary" className="w-full">
-                Scan Now
-              </Button>
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Scan className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold mb-2">Crop Analysis</h3>
+              <Link to="/consumer/crop-analysis">
+                <Button variant="secondary" className="w-full">
+                  Analyze Now
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
           <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-secondary" />
-                Meet the Farmers
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Connect with local farmers and learn their stories.
-              </p>
-              <Button variant="outline" className="w-full">
-                Browse Profiles
-              </Button>
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <MessageSquare className="h-6 w-6 text-secondary" />
+              </div>
+              <h3 className="font-semibold mb-2">Meet the Farmers</h3>
+              <Link to="/consumer/community">
+                <Button variant="outline" className="w-full">
+                  Browse Profiles
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
           <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-accent" />
-                AI Recommendations
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Get personalized suggestions based on your preferences.
-              </p>
-              <Button variant="outline" className="w-full">
-                Get Suggestions
-              </Button>
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="h-6 w-6 text-accent" />
+              </div>
+              <h3 className="font-semibold mb-2">AI Recommendations</h3>
+              <Link to="/consumer/ai-features">
+                <Button variant="outline" className="w-full">
+                  Get Suggestions
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>

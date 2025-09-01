@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { CartSidebar } from "@/components/CartSidebar";
 import { 
   ShoppingCart, 
   Scan, 
@@ -53,11 +54,14 @@ export function ConsumerLayout({ children, currentPage }: ConsumerLayoutProps) {
       {/* Sidebar */}
       <div className="fixed left-0 top-0 h-full w-64 bg-card border-r shadow-card">
         <div className="p-6 border-b">
-          <Link to="/consumer-dashboard">
-            <h1 className="text-xl font-bold gradient-hero bg-clip-text text-transparent">
-              Farm2City
-            </h1>
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link to="/consumer-dashboard">
+              <h1 className="text-xl font-bold gradient-hero bg-clip-text text-transparent">
+                Farm2City
+              </h1>
+            </Link>
+            <CartSidebar />
+          </div>
           <p className="text-sm text-muted-foreground">Consumer Portal</p>
         </div>
 

@@ -184,8 +184,50 @@ export default function Community() {
     ));
   };
 
+  const [showNewPost, setShowNewPost] = useState(false);
+  const [newPostContent, setNewPostContent] = useState("");
+  const [showComments, setShowComments] = useState<string | null>(null);
+  const [newComment, setNewComment] = useState("");
+
   const handleComment = (postId: string) => {
-    toast.success("Comment feature coming soon!");
+    setShowComments(showComments === postId ? null : postId);
+  };
+
+  const addComment = (postId: string) => {
+    if (!newComment.trim()) return;
+    toast.success("Comment added!");
+    setNewComment("");
+    setShowComments(null);
+  };
+
+  const createNewPost = () => {
+    if (!newPostContent.trim()) return;
+    const newPost: CommunityPost = {
+      id: Date.now().toString(),
+      farmer: {
+        id: "current-user",
+        name: "You",
+        farm: "Your Garden",
+        location: "Your Location",
+        image: "",
+        bio: "Consumer sharing experiences",
+        specialties: [],
+        rating: 0,
+        followers: 0,
+        verified: false,
+        joinDate: new Date().toISOString()
+      },
+      content: newPostContent,
+      likes: 0,
+      comments: 0,
+      shares: 0,
+      timestamp: "Just now",
+      liked: false
+    };
+    setPosts(prev => [newPost, ...prev]);
+    setNewPostContent("");
+    setShowNewPost(false);
+    toast.success("Post created successfully!");
   };
 
   const handleShare = (postId: string) => {
@@ -222,6 +264,36 @@ export default function Community() {
             <TabsContent value="feed" className="space-y-6 mt-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
+                  {/* New Post Section */}
+                  <Card className="shadow-card">
+                    <CardContent className="p-6">
+                      {!showNewPost ? (
+                        <Button 
+                          onClick={() => setShowNewPost(true)}
+                          variant="outline" 
+                          className="w-full justify-start"
+                        >
+                          Share something with the community...
+                        </Button>
+                      ) : (
+                        <div className="space-y-4">
+                          <textarea
+                            className="w-full p-3 border rounded-lg resize-none"
+                            placeholder="What's happening in your garden or kitchen?"
+                            rows={3}
+                            value={newPostContent}
+                            onChange={(e) => setNewPostContent(e.target.value)}
+                          />
+                          <div className="flex gap-2">
+                            <Button onClick={createNewPost}>Post</Button>
+                            <Button variant="outline" onClick={() => setShowNewPost(false)}>
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                   {posts.map((post) => (
                     <Card key={post.id} className="shadow-card">
                       <CardHeader>
@@ -287,6 +359,31 @@ export default function Community() {
                             </Button>
                           </div>
                         </div>
+                        
+                        {/* Comments Section */}
+                        {showComments === post.id && (
+                          <div className="pt-4 border-t space-y-3">
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Write a comment..."
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && addComment(post.id)}
+                              />
+                              <Button size="sm" onClick={() => addComment(post.id)}>
+                                Post
+                              </Button>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="text-sm p-2 bg-muted rounded">
+                                <span className="font-medium">Sarah Johnson:</span> Great harvest! 🌱
+                              </div>
+                              <div className="text-sm p-2 bg-muted rounded">
+                                <span className="font-medium">Mike Chen:</span> Those look amazing!
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
@@ -486,7 +583,13 @@ export default function Community() {
                         </Avatar>
                         <span className="text-sm">Sarah Johnson</span>
                       </div>
-                      <Button variant="outline" size="sm">Read More</Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => toast.success("Opening full story...")}
+                      >
+                        Read More
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -513,7 +616,13 @@ export default function Community() {
                         </Avatar>
                         <span className="text-sm">Miguel Rodriguez</span>
                       </div>
-                      <Button variant="outline" size="sm">Read More</Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => toast.success("Opening full story...")}
+                      >
+                        Read More
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -540,7 +649,13 @@ export default function Community() {
                         </Avatar>
                         <span className="text-sm">Emily Chen</span>
                       </div>
-                      <Button variant="outline" size="sm">Read More</Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => toast.success("Opening full story...")}
+                      >
+                        Read More
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

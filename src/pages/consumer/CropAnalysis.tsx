@@ -119,23 +119,40 @@ export default function CropAnalysis() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
-                      <div>
+                      <Camera className="h-12 w-12 mx-auto text-muted-foreground" />
+                      <div className="space-y-2">
                         <p className="text-sm text-muted-foreground mb-2">
-                          Upload a photo of your produce
+                          Upload or take a photo of your produce
                         </p>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                          id="image-upload"
-                        />
-                        <label htmlFor="image-upload">
-                          <Button variant="outline" className="cursor-pointer">
-                            Choose Image
-                          </Button>
-                        </label>
+                        <div className="flex gap-2 justify-center">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                            id="image-upload"
+                          />
+                          <label htmlFor="image-upload">
+                            <Button variant="outline" className="cursor-pointer">
+                              <Upload className="h-4 w-4 mr-2" />
+                              Upload Photo
+                            </Button>
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                            id="camera-capture"
+                          />
+                          <label htmlFor="camera-capture">
+                            <Button variant="outline" className="cursor-pointer">
+                              <Camera className="h-4 w-4 mr-2" />
+                              Take Photo
+                            </Button>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   )}
