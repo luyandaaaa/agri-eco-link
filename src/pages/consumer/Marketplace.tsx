@@ -12,6 +12,11 @@ import lettuceImg from "@/assets/products/lettuce.jpg";
 import applesImg from "@/assets/products/apples.jpg";
 import cornImg from "@/assets/products/corn.jpg";
 import peppersImg from "@/assets/products/peppers.jpg";
+import fruitsImg from "@/assets/categories/fruits.jpg";
+import vegetablesImg from "@/assets/categories/vegetables.jpg";
+import herbsImg from "@/assets/categories/herbs.jpg";
+import dairyImg from "@/assets/categories/dairy.jpg";
+import grainsImg from "@/assets/categories/grains.jpg";
 
 interface Product {
   id: string;
@@ -25,97 +30,144 @@ interface Product {
   organic: boolean;
   freshness: string;
   description: string;
+  category: string;
 }
 
 export default function Marketplace() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const { addToCart: addItemToCart, cartItems } = useCart();
+
+  const categories = [
+    { id: "all", name: "All Products", image: fruitsImg },
+    { id: "fruits", name: "Fruits", image: fruitsImg },
+    { id: "vegetables", name: "Vegetables", image: vegetablesImg },
+    { id: "herbs", name: "Herbs", image: herbsImg },
+    { id: "dairy", name: "Dairy", image: dairyImg },
+    { id: "grains", name: "Grains", image: grainsImg }
+  ];
 
   const products: Product[] = [
     {
       id: "1",
       name: "Fresh Tomatoes",
       farmer: "Green Valley Farm",
-      price: 4.50,
-      unit: "lb",
+      price: 65.50,
+      unit: "kg",
       distance: "2.3 km",
       rating: 4.8,
       image: tomatoesImg,
       organic: true,
       freshness: "Harvested Today",
-      description: "Vine-ripened organic tomatoes with rich flavor"
+      description: "Vine-ripened organic tomatoes with rich flavor",
+      category: "vegetables"
     },
     {
       id: "2",
       name: "Organic Carrots",
       farmer: "Sunny Acres",
-      price: 3.20,
-      unit: "lb",
+      price: 45.20,
+      unit: "kg",
       distance: "1.8 km",
       rating: 4.9,
       image: carrotsImg,
       organic: true,
       freshness: "Harvested Yesterday",
-      description: "Sweet, crisp organic carrots perfect for cooking or snacking"
+      description: "Sweet, crisp organic carrots perfect for cooking or snacking",
+      category: "vegetables"
     },
     {
       id: "3",
       name: "Fresh Lettuce",
       farmer: "Riverside Gardens",
-      price: 2.80,
+      price: 38.80,
       unit: "head",
       distance: "3.1 km",
       rating: 4.7,
       image: lettuceImg,
       organic: false,
       freshness: "Harvested Today",
-      description: "Crisp, fresh lettuce heads perfect for salads"
+      description: "Crisp, fresh lettuce heads perfect for salads",
+      category: "vegetables"
     },
     {
       id: "4",
       name: "Red Apples",
       farmer: "Mountain View Orchard",
-      price: 5.00,
-      unit: "lb",
+      price: 75.00,
+      unit: "kg",
       distance: "4.2 km",
       rating: 4.6,
       image: applesImg,
       organic: true,
       freshness: "Harvested 2 days ago",
-      description: "Sweet, juicy red apples with crisp texture"
+      description: "Sweet, juicy red apples with crisp texture",
+      category: "fruits"
     },
     {
       id: "5",
       name: "Sweet Corn",
       farmer: "Prairie Gold Farm",
-      price: 6.50,
+      price: 95.50,
       unit: "dozen",
       distance: "2.9 km",
       rating: 4.8,
       image: cornImg,
       organic: false,
       freshness: "Harvested Today",
-      description: "Fresh sweet corn perfect for grilling or boiling"
+      description: "Fresh sweet corn perfect for grilling or boiling",
+      category: "grains"
     },
     {
       id: "6",
       name: "Bell Peppers",
       farmer: "Sunshine Vegetables",
-      price: 4.80,
-      unit: "lb",
+      price: 68.80,
+      unit: "kg",
       distance: "1.5 km",
       rating: 4.7,
       image: peppersImg,
       organic: true,
       freshness: "Harvested Today",
-      description: "Colorful organic bell peppers, perfect for cooking"
+      description: "Colorful organic bell peppers, perfect for cooking",
+      category: "vegetables"
+    },
+    {
+      id: "7",
+      name: "Fresh Basil",
+      farmer: "Herb Garden Co",
+      price: 25.00,
+      unit: "bunch",
+      distance: "1.2 km",
+      rating: 4.9,
+      image: herbsImg,
+      organic: true,
+      freshness: "Harvested Today",
+      description: "Aromatic fresh basil perfect for cooking",
+      category: "herbs"
+    },
+    {
+      id: "8",
+      name: "Farm Fresh Milk",
+      farmer: "Dairy Valley",
+      price: 18.50,
+      unit: "liter",
+      distance: "3.5 km",
+      rating: 4.8,
+      image: dairyImg,
+      organic: false,
+      freshness: "Bottled Today",
+      description: "Fresh whole milk from grass-fed cows",
+      category: "dairy"
     }
   ];
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.farmer.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.farmer.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   const addToCart = (productId: string) => {
     const product = products.find(p => p.id === productId);
@@ -143,24 +195,46 @@ export default function Marketplace() {
           </div>
 
           {/* Search and Filters */}
-          <div className="mb-6 flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search products or farmers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+          <div className="mb-6 space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search products or farmers..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button variant="outline" className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Nearby
+              </Button>
             </div>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              Filters
-            </Button>
-            <Button variant="outline" className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Nearby
-            </Button>
+            
+            {/* Category Filter */}
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+              {categories.map((category) => (
+                <Card 
+                  key={category.id}
+                  className={`cursor-pointer transition-all hover:shadow-md ${
+                    selectedCategory === category.id 
+                      ? 'ring-2 ring-primary shadow-md' 
+                      : ''
+                  }`}
+                  onClick={() => setSelectedCategory(category.id)}
+                >
+                  <CardContent className="p-3 text-center">
+                    <img
+                      src={category.image}
+                      alt={category.name}
+                      className="w-12 h-12 object-cover rounded-full mx-auto mb-2"
+                    />
+                    <p className="text-xs font-medium">{category.name}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
 
           {/* Products Grid */}

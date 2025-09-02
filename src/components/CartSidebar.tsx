@@ -3,35 +3,61 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ShoppingCart, Trash2, Plus, Minus, CreditCard } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ShoppingCart, Trash2, Plus, Minus, CreditCard, Check, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
 
 export function CartSidebar() {
   const { cartItems, updateQuantity, removeFromCart, getTotalItems, getTotalPrice, clearCart } = useCart();
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [paymentStep, setPaymentStep] = useState<'details' | 'processing' | 'confirmation'>('details');
+  const [paymentData, setPaymentData] = useState({
+    cardNumber: '',
+    expiryDate: '',
+    cvv: '',
+    name: '',
+    email: ''
+  });
 
-  const handleCheckout = async () => {
-    if (cartItems.length === 0) {
-      toast.error("Your cart is empty");
+  const handlePayment = async () => {
+    if (!paymentData.cardNumber || !paymentData.expiryDate || !paymentData.cvv || !paymentData.name || !paymentData.email) {
+      toast.error("Please fill in all payment details");
       return;
     }
 
-    setIsCheckingOut(true);
+    setPaymentStep('processing');
     
-    // Simulate checkout process
     try {
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Simulate bank confirmation
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Clear cart after successful checkout
-      clearCart();
-      toast.success("Order placed successfully! You will receive a confirmation email shortly.");
+      setPaymentStep('confirmation');
+      
+      // Send confirmation email (simulated)
+      setTimeout(() => {
+        toast.success("Confirmation email sent to " + paymentData.email);
+        clearCart();
+        setShowPaymentDialog(false);
+        setPaymentStep('details');
+        setPaymentData({
+          cardNumber: '',
+          expiryDate: '',
+          cvv: '',
+          name: '',
+          email: ''
+        });
+      }, 1000);
+      
     } catch (error) {
-      toast.error("Checkout failed. Please try again.");
-    } finally {
-      setIsCheckingOut(false);
+      toast.error("Payment failed. Please try again.");
+      setPaymentStep('details');
     }
   };
 
@@ -79,7 +105,7 @@ export function CartSidebar() {
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-sm truncate">{item.name}</h4>
                           <p className="text-xs text-muted-foreground">{item.farmer}</p>
-                          <p className="text-sm font-medium">${item.price.toFixed(2)} each</p>
+                          <p className="text-sm font-medium">R{item.price.toFixed(2)} each</p>
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           <Button
@@ -121,50 +147,142 @@ export function CartSidebar() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Subtotal:</span>
-                  <span className="font-bold">${getTotalPrice().toFixed(2)}</span>
+                  <span className="font-bold">R{getTotalPrice().toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm text-muted-foreground">
                   <span>Delivery:</span>
-                  <span>$2.50</span>
+                  <span>R35.00</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between items-center text-lg font-bold">
                   <span>Total:</span>
-                  <span>${(getTotalPrice() + 2.50).toFixed(2)}</span>
+                  <span>R{(getTotalPrice() + 35.00).toFixed(2)}</span>
                 </div>
               </div>
               
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button 
-                    className="w-full" 
-                    size="lg"
-                    disabled={cartItems.length === 0}
-                  >
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Proceed to Checkout
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Confirm Your Order</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      You are about to place an order for {getTotalItems()} items totaling ${(getTotalPrice() + 2.50).toFixed(2)}. 
-                      This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={handleCheckout}
-                      disabled={isCheckingOut}
-                      className="bg-primary hover:bg-primary/90"
-                    >
-                      {isCheckingOut ? "Processing..." : "Place Order"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Button 
+                className="w-full" 
+                size="lg"
+                disabled={cartItems.length === 0}
+                onClick={() => setShowPaymentDialog(true)}
+              >
+                <CreditCard className="h-4 w-4 mr-2" />
+                Proceed to Checkout
+              </Button>
+              
+              {/* Payment Dialog */}
+              <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {paymentStep === 'details' && 'Payment Details'}
+                      {paymentStep === 'processing' && 'Processing Payment'}
+                      {paymentStep === 'confirmation' && 'Payment Successful'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  
+                  {paymentStep === 'details' && (
+                    <div className="space-y-4">
+                      <div className="bg-muted p-3 rounded-lg">
+                        <div className="flex justify-between text-sm">
+                          <span>Subtotal:</span>
+                          <span>R{getTotalPrice().toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Delivery:</span>
+                          <span>R35.00</span>
+                        </div>
+                        <div className="flex justify-between font-bold">
+                          <span>Total:</span>
+                          <span>R{(getTotalPrice() + 35.00).toFixed(2)}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div>
+                          <Label htmlFor="cardNumber">Card Number</Label>
+                          <Input
+                            id="cardNumber"
+                            placeholder="1234 5678 9012 3456"
+                            value={paymentData.cardNumber}
+                            onChange={(e) => setPaymentData({...paymentData, cardNumber: e.target.value})}
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label htmlFor="expiry">Expiry Date</Label>
+                            <Input
+                              id="expiry"
+                              placeholder="MM/YY"
+                              value={paymentData.expiryDate}
+                              onChange={(e) => setPaymentData({...paymentData, expiryDate: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="cvv">CVV</Label>
+                            <Input
+                              id="cvv"
+                              placeholder="123"
+                              value={paymentData.cvv}
+                              onChange={(e) => setPaymentData({...paymentData, cvv: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="name">Cardholder Name</Label>
+                          <Input
+                            id="name"
+                            placeholder="John Doe"
+                            value={paymentData.name}
+                            onChange={(e) => setPaymentData({...paymentData, name: e.target.value})}
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="email">Email Address</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="john@example.com"
+                            value={paymentData.email}
+                            onChange={(e) => setPaymentData({...paymentData, email: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                      
+                      <Button onClick={handlePayment} className="w-full">
+                        Pay R{(getTotalPrice() + 35.00).toFixed(2)}
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {paymentStep === 'processing' && (
+                    <div className="text-center py-8 space-y-4">
+                      <Clock className="h-12 w-12 mx-auto animate-spin text-primary" />
+                      <div>
+                        <h3 className="font-medium">Processing Payment</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Please confirm the payment on your banking app
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {paymentStep === 'confirmation' && (
+                    <div className="text-center py-8 space-y-4">
+                      <Check className="h-12 w-12 mx-auto text-green-500" />
+                      <div>
+                        <h3 className="font-medium">Payment Successful!</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Order confirmation has been sent to your email
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
             </>
           )}
         </div>
