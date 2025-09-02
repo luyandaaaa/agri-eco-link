@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ConsumerLayout } from "@/components/layouts/ConsumerLayout";
+import { useCart } from "@/contexts/CartContext";
 import { 
   Search,
   ShoppingCart, 
@@ -162,10 +163,19 @@ export default function ConsumerDashboard() {
     return matchesSearch && matchesFilter;
   }).slice(0, 8);
 
+  const { addToCart: addItemToCart } = useCart();
+
   const addToCart = (productId: number) => {
     const product = allProducts.find(p => p.id === productId);
     if (product) {
-      toast.success(`${product.name} added to cart!`);
+      addItemToCart({
+        id: product.id.toString(),
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        farmer: product.farm,
+        unit: product.unit,
+      });
     }
   };
 

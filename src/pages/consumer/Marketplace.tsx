@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, MapPin, Star, ShoppingCart } from "lucide-react";
-import { toast } from "sonner";
+import { useCart } from "@/contexts/CartContext";
 import tomatoesImg from "@/assets/products/tomatoes.jpg";
 import carrotsImg from "@/assets/products/carrots.jpg";
 import lettuceImg from "@/assets/products/lettuce.jpg";
@@ -29,7 +29,7 @@ interface Product {
 
 export default function Marketplace() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [cart, setCart] = useState<string[]>([]);
+  const { addToCart: addItemToCart, cartItems } = useCart();
 
   const products: Product[] = [
     {
@@ -118,9 +118,17 @@ export default function Marketplace() {
   );
 
   const addToCart = (productId: string) => {
-    setCart([...cart, productId]);
     const product = products.find(p => p.id === productId);
-    toast.success(`${product?.name} added to cart!`);
+    if (product) {
+      addItemToCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        farmer: product.farmer,
+        unit: product.unit,
+      });
+    }
   };
 
   return (
@@ -210,11 +218,11 @@ export default function Marketplace() {
                   
                   <Button 
                     onClick={() => addToCart(product.id)}
-                    disabled={cart.includes(product.id)}
+                    disabled={cartItems.some(item => item.id === product.id)}
                     className="w-full"
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
-                    {cart.includes(product.id) ? "Added to Cart" : "Add to Cart"}
+                    {cartItems.some(item => item.id === product.id) ? "Added to Cart" : "Add to Cart"}
                   </Button>
                 </CardContent>
               </Card>

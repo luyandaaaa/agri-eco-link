@@ -4,65 +4,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ShoppingCart, Trash2, Plus, Minus } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { ShoppingCart, Trash2, Plus, Minus, CreditCard } from "lucide-react";
 import { toast } from "sonner";
-import tomatoesImg from "@/assets/products/tomatoes.jpg";
-import carrotsImg from "@/assets/products/carrots.jpg";
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-  farmer: string;
-}
+import { useCart } from "@/contexts/CartContext";
 
 export function CartSidebar() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: "1",
-      name: "Fresh Tomatoes",
-      price: 4.50,
-      quantity: 2,
-      image: tomatoesImg,
-      farmer: "Green Valley Farm"
-    },
-    {
-      id: "2",
-      name: "Organic Carrots",
-      price: 3.20,
-      quantity: 1,
-      image: carrotsImg,
-      farmer: "Sunny Acres"
-    }
-  ]);
+  const { cartItems, updateQuantity, removeFromCart, getTotalItems, getTotalPrice, clearCart } = useCart();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity === 0) {
-      removeItem(id);
+  const handleCheckout = async () => {
+    if (cartItems.length === 0) {
+      toast.error("Your cart is empty");
       return;
     }
-    setCartItems(prev => prev.map(item => 
-      item.id === id ? { ...item, quantity: newQuantity } : item
-    ));
-  };
 
-  const removeItem = (id: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
-    toast.success("Item removed from cart");
-  };
-
-  const getTotalItems = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
-  };
-
-  const getTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-  };
-
-  const handleCheckout = () => {
-    toast.success("Proceeding to checkout...");
+    setIsCheckingOut(true);
+    
+    // Simulate checkout process
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Clear cart after successful checkout
+      clearCart();
+      toast.success("Order placed successfully! You will receive a confirmation email shortly.");
+    } catch (error) {
+      toast.error("Checkout failed. Please try again.");
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   return (
@@ -115,7 +85,7 @@ export function CartSidebar() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => removeFromCart(item.id)}
                             className="h-6 w-6 p-0"
                           >
                             <Trash2 className="h-3 w-3" />
@@ -164,13 +134,37 @@ export function CartSidebar() {
                 </div>
               </div>
               
-              <Button 
-                className="w-full" 
-                size="lg"
-                onClick={handleCheckout}
-              >
-                Proceed to Checkout
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    className="w-full" 
+                    size="lg"
+                    disabled={cartItems.length === 0}
+                  >
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Proceed to Checkout
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirm Your Order</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      You are about to place an order for {getTotalItems()} items totaling ${(getTotalPrice() + 2.50).toFixed(2)}. 
+                      This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleCheckout}
+                      disabled={isCheckingOut}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      {isCheckingOut ? "Processing..." : "Place Order"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </>
           )}
         </div>
