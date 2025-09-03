@@ -195,14 +195,27 @@ export default function CropAnalysis() {
                         alt="Selected produce"
                         className="mx-auto max-h-48 rounded-lg"
                       />
-                      <Button
-                        onClick={analyzeImage}
-                        disabled={analyzing}
-                        className="w-full"
-                      >
-                        <Zap className="h-4 w-4 mr-2" />
-                        {analyzing ? "Analyzing..." : "Analyze with AI"}
-                      </Button>
+                      <div className="space-y-2">
+                        <Button
+                          onClick={analyzeImage}
+                          disabled={analyzing}
+                          className="w-full"
+                        >
+                          <Zap className="h-4 w-4 mr-2" />
+                          {analyzing ? "Analyzing..." : "Analyze with AI"}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedImage(null);
+                            setAnalysisResult(null);
+                            toast.success("Image cleared! You can upload a new image.");
+                          }}
+                          className="w-full"
+                        >
+                          Clear & Upload New
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <div className="space-y-4">

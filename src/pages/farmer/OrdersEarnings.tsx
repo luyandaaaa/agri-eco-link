@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,35 +18,54 @@ import { FarmerLayout } from "@/components/layouts/FarmerLayout";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function OrdersEarnings() {
-  const [orders, setOrders] = useState([
-    {
-      id: "#ORD-001",
-      customer: "Sipho's Restaurant",
-      items: "5kg Spinach, 3kg Tomatoes",
-      total: 387.50,
-      status: "pending",
-      date: "2024-01-15",
-      location: "Johannesburg"
-    },
-    {
-      id: "#ORD-002", 
-      customer: "Green Market Co-op",
-      items: "10kg Sweet Corn",
-      total: 250.00,
-      status: "confirmed",
-      date: "2024-01-14",
-      location: "Pretoria"
-    },
-    {
-      id: "#ORD-003",
-      customer: "Urban Fresh Store",
-      items: "8kg Mixed Vegetables",
-      total: 320.00,
-      status: "delivered",
-      date: "2024-01-12",
-      location: "Cape Town"
-    }
-  ]);
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    const storedOrders = JSON.parse(localStorage.getItem('farmerOrders') || '[]');
+    const defaultOrders = [
+      {
+        id: "#ORD-001",
+        customer: "Sipho's Restaurant",
+        items: "5kg Spinach, 3kg Tomatoes",
+        total: 387.50,
+        status: "pending",
+        date: "2024-01-15",
+        location: "Johannesburg"
+      },
+      {
+        id: "#ORD-002", 
+        customer: "Green Market Co-op",
+        items: "10kg Sweet Corn",
+        total: 250.00,
+        status: "confirmed",
+        date: "2024-01-14",
+        location: "Pretoria"
+      },
+      {
+        id: "#ORD-003",
+        customer: "Urban Fresh Store",
+        items: "8kg Mixed Vegetables",
+        total: 320.00,
+        status: "delivered",
+        date: "2024-01-12",
+        location: "Cape Town"
+      }
+    ];
+    
+    // Transform stored orders to farmer format and combine with defaults
+    const transformedOrders = storedOrders.map(order => ({
+      id: order.id,
+      customer: order.customerName || order.invoiceDetails?.customerName || "Customer",
+      items: order.items.map(item => `${item.quantity}${item.unit || 'kg'} ${item.name}`).join(', '),
+      total: order.totalAmount || order.total,
+      status: order.status,
+      date: new Date(order.orderDate).toLocaleDateString(),
+      location: "Local Area"
+    }));
+    
+    const allOrders = [...transformedOrders, ...defaultOrders];
+    setOrders(allOrders);
+  }, []);
 
   const [earnings] = useState({
     thisMonth: 3420.50,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ConsumerLayout } from "@/components/layouts/ConsumerLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,47 +32,55 @@ interface Order {
 }
 
 export default function MyOrders() {
-  const [orders] = useState<Order[]>([
-    {
-      id: "ORD-001",
-      items: [
-        { id: "1", name: "Fresh Tomatoes", quantity: 2, price: 4.50, image: tomatoesImg, farmer: "Green Valley Farm" },
-        { id: "2", name: "Organic Carrots", quantity: 1, price: 3.20, image: carrotsImg, farmer: "Green Valley Farm" }
-      ],
-      status: "delivered",
-      total: 12.20,
-      orderDate: "2024-08-28",
-      estimatedDelivery: "2024-08-30",
-      trackingNumber: "TRK123456",
-      farmer: "Green Valley Farm",
-      address: "123 Main St, City, State 12345"
-    },
-    {
-      id: "ORD-002",
-      items: [
-        { id: "3", name: "Fresh Lettuce", quantity: 3, price: 2.80, image: lettuceImg, farmer: "Riverside Gardens" }
-      ],
-      status: "shipped",
-      total: 8.40,
-      orderDate: "2024-08-29",
-      estimatedDelivery: "2024-08-31",
-      trackingNumber: "TRK789012",
-      farmer: "Riverside Gardens",
-      address: "123 Main St, City, State 12345"
-    },
-    {
-      id: "ORD-003",
-      items: [
-        { id: "4", name: "Red Apples", quantity: 1, price: 5.00, image: applesImg, farmer: "Mountain View Orchard" }
-      ],
-      status: "confirmed",
-      total: 5.00,
-      orderDate: "2024-08-30",
-      estimatedDelivery: "2024-09-02",
-      farmer: "Mountain View Orchard",
-      address: "123 Main St, City, State 12345"
-    }
-  ]);
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    const storedOrders = JSON.parse(localStorage.getItem('consumerOrders') || '[]');
+    const defaultOrders = [
+      {
+        id: "ORD-001",
+        items: [
+          { id: "1", name: "Fresh Tomatoes", quantity: 2, price: 4.50, image: tomatoesImg, farmer: "Green Valley Farm" },
+          { id: "2", name: "Organic Carrots", quantity: 1, price: 3.20, image: carrotsImg, farmer: "Green Valley Farm" }
+        ],
+        status: "delivered" as const,
+        total: 12.20,
+        orderDate: "2024-08-28",
+        estimatedDelivery: "2024-08-30",
+        trackingNumber: "TRK123456",
+        farmer: "Green Valley Farm",
+        address: "123 Main St, City, State 12345"
+      },
+      {
+        id: "ORD-002",
+        items: [
+          { id: "3", name: "Fresh Lettuce", quantity: 3, price: 2.80, image: lettuceImg, farmer: "Riverside Gardens" }
+        ],
+        status: "shipped" as const,
+        total: 8.40,
+        orderDate: "2024-08-29",
+        estimatedDelivery: "2024-08-31",
+        trackingNumber: "TRK789012",
+        farmer: "Riverside Gardens",
+        address: "123 Main St, City, State 12345"
+      },
+      {
+        id: "ORD-003",
+        items: [
+          { id: "4", name: "Red Apples", quantity: 1, price: 5.00, image: applesImg, farmer: "Mountain View Orchard" }
+        ],
+        status: "confirmed" as const,
+        total: 5.00,
+        orderDate: "2024-08-30",
+        estimatedDelivery: "2024-09-02",
+        farmer: "Mountain View Orchard",
+        address: "123 Main St, City, State 12345"
+      }
+    ];
+    
+    const allOrders = [...storedOrders, ...defaultOrders];
+    setOrders(allOrders);
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -122,51 +130,83 @@ export default function MyOrders() {
     
     toast.success("Generating invoice... Download will start shortly.");
     
-    // Generate detailed invoice content
+    // Enhanced detailed invoice content with full order details
+    const invoiceDetails = (order as any).invoiceDetails || {
+      customerName: "John Doe",
+      customerEmail: "customer@example.com",
+      customerPhone: "+27 123 456 789",
+      orderDate: order.orderDate,
+      paymentDate: order.orderDate,
+      items: order.items.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        subtotal: item.quantity * item.price,
+        farmer: item.farmer
+      }))
+    };
+    
     const invoiceContent = `
-FRESH FROM LOCAL FARMS
+FRESH FROM LOCAL FARMS - DETAILED INVOICE
 Invoice #${orderId}
 =====================================
 
-Order Details:
-Order ID: ${orderId}
-Order Date: ${new Date(order.orderDate).toLocaleDateString()}
-Customer: John Doe
-Email: customer@example.com
-Phone: +27 123 456 789
+CUSTOMER INFORMATION:
+Name: ${invoiceDetails.customerName}
+Email: ${invoiceDetails.customerEmail}
+Phone: ${invoiceDetails.customerPhone}
 
-Delivery Address:
+DELIVERY ADDRESS:
 ${order.address}
 
-Farmer Details:
-${order.farmer}
-Contact: farmer@${order.farmer.toLowerCase().replace(/\s+/g, '')}.com
+ORDER DETAILS:
+Order ID: ${orderId}
+Order Date: ${new Date(invoiceDetails.orderDate).toLocaleDateString()} at ${new Date(invoiceDetails.orderDate).toLocaleTimeString()}
+Payment Date: ${new Date(invoiceDetails.paymentDate).toLocaleDateString()} at ${new Date(invoiceDetails.paymentDate).toLocaleTimeString()}
 
-Items Ordered:
+FARMER DETAILS:
+${order.farmer}
+Contact: farmer@${order.farmer.toLowerCase().replace(/\\s+/g, '')}.com
+Farm Location: Western Cape, South Africa
+
+ITEMS PURCHASED:
 =====================================
-${order.items.map(item => 
-  `${item.name}
-   Quantity: ${item.quantity}
+${order.items.map((item, index) => 
+  `${index + 1}. ${item.name}
+   Quantity: ${item.quantity} ${(item as any).unit || 'kg'}
    Unit Price: R${item.price.toFixed(2)}
    Subtotal: R${(item.quantity * item.price).toFixed(2)}
-   Farmer: ${item.farmer}`
-).join('\n\n')}
+   Farmer: ${item.farmer}
+   Quality: Premium Grade A`
+).join('\\n\\n')}
 
 =====================================
-Order Summary:
+PAYMENT BREAKDOWN:
 Subtotal: R${order.total.toFixed(2)}
 Delivery Fee: R35.00
-Total Amount: R${(order.total + 35.00).toFixed(2)}
+Tax (0%): R0.00
+=====================================
+TOTAL AMOUNT: R${(order.total + 35.00).toFixed(2)}
 
-Payment Status: Paid
-Payment Method: Card ending in ****1234
-Transaction Date: ${new Date(order.orderDate).toLocaleDateString()}
+PAYMENT INFORMATION:
+Payment Status: PAID ✓
+Payment Method: ${(order as any).paymentMethod || 'Card ending in ****1234'}
+Transaction ID: TXN-${orderId}
+Payment Date: ${new Date(invoiceDetails.paymentDate).toLocaleDateString()}
 
+DELIVERY INFORMATION:
 Estimated Delivery: ${new Date(order.estimatedDelivery).toLocaleDateString()}
 ${order.trackingNumber ? `Tracking Number: ${order.trackingNumber}` : ''}
+Delivery Address: ${order.address}
+
+TERMS & CONDITIONS:
+- Fresh produce guaranteed for 7 days
+- Free delivery on orders over R100
+- 100% organic and locally sourced
 
 Thank you for supporting local farmers!
-Contact us: support@freshfromlocalfarms.co.za
+For support: support@freshfromlocalfarms.co.za
+Phone: +27 21 123 4567
 =====================================
     `;
     

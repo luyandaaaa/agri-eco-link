@@ -44,16 +44,54 @@ export function CartSidebar() {
       const orderId = "ORD-" + Date.now().toString().slice(-6);
       const orderData = {
         id: orderId,
-        items: cartItems,
-        total: getTotalPrice() + 35.00,
+        items: cartItems.map(item => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          image: item.image,
+          farmer: item.farmer,
+          unit: item.unit
+        })),
+        status: 'pending',
+        total: getTotalPrice(),
+        orderDate: new Date().toISOString(),
+        paymentDate: new Date().toISOString(),
+        estimatedDelivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+        trackingNumber: `TRK${Date.now().toString().slice(-6)}`,
+        farmer: cartItems[0]?.farmer || "Local Farm",
+        address: "123 Main St, City, State 12345",
         customerEmail: paymentData.email,
         customerName: paymentData.name,
-        status: 'confirmed',
-        orderDate: new Date().toISOString(),
-        estimatedDelivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString()
+        subtotal: getTotalPrice(),
+        deliveryFee: 35.00,
+        totalAmount: getTotalPrice() + 35.00,
+        paymentMethod: `Card ending in ****${paymentData.cardNumber.slice(-4)}`,
+        invoiceDetails: {
+          customerName: paymentData.name,
+          customerEmail: paymentData.email,
+          customerPhone: "+27 123 456 789",
+          orderDate: new Date().toISOString(),
+          paymentDate: new Date().toISOString(),
+          items: cartItems.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            unitPrice: item.price,
+            subtotal: item.quantity * item.price,
+            farmer: item.farmer
+          }))
+        }
       };
       
-      // Store order (simulate API call)
+      // Store order in localStorage for both consumer and farmer
+      const existingOrders = JSON.parse(localStorage.getItem('consumerOrders') || '[]');
+      const farmerOrders = JSON.parse(localStorage.getItem('farmerOrders') || '[]');
+      
+      existingOrders.push(orderData);
+      farmerOrders.push(orderData);
+      
+      localStorage.setItem('consumerOrders', JSON.stringify(existingOrders));
+      localStorage.setItem('farmerOrders', JSON.stringify(farmerOrders));
       localStorage.setItem('lastOrder', JSON.stringify(orderData));
       
       setTimeout(() => {
