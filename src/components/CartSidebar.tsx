@@ -40,9 +40,24 @@ export function CartSidebar() {
       
       setPaymentStep('confirmation');
       
-      // Send confirmation email (simulated)
+      // Create order and send confirmation email (simulated)
+      const orderId = "ORD-" + Date.now().toString().slice(-6);
+      const orderData = {
+        id: orderId,
+        items: cartItems,
+        total: getTotalPrice() + 35.00,
+        customerEmail: paymentData.email,
+        customerName: paymentData.name,
+        status: 'confirmed',
+        orderDate: new Date().toISOString(),
+        estimatedDelivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString()
+      };
+      
+      // Store order (simulate API call)
+      localStorage.setItem('lastOrder', JSON.stringify(orderData));
+      
       setTimeout(() => {
-        toast.success("Confirmation email sent to " + paymentData.email);
+        toast.success(`Order ${orderId} confirmed! Confirmation email sent to ${paymentData.email}`);
         clearCart();
         setShowPaymentDialog(false);
         setPaymentStep('details');

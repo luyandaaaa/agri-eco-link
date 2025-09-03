@@ -15,12 +15,30 @@ export default function CropAnalysis() {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast.error("Please select a valid image file");
+        return;
+      }
+      
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        toast.error("Image size must be less than 10MB");
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
         setAnalysisResult(null);
+        toast.success("Image uploaded successfully! Click 'Analyze with AI' to start scanning.");
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileInput = (inputId: string) => {
+    const input = document.getElementById(inputId) as HTMLInputElement;
+    if (input) {
+      input.click();
     }
   };
 
@@ -34,17 +52,34 @@ export default function CropAnalysis() {
       // Simulate AI processing with dynamic crop detection
       await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // Analyze image features to determine crop type
+      // Enhanced AI analysis with computer vision simulation
+      const analyzeImageColors = (imageBase64: string) => {
+        // Simulate color analysis
+        const colors = ['red', 'green', 'orange', 'yellow', 'purple'];
+        const shapes = ['round', 'elongated', 'leafy', 'clustered'];
+        const textures = ['smooth', 'rough', 'waxy', 'fibrous'];
+        
+        return {
+          dominantColor: colors[Math.floor(Math.random() * colors.length)],
+          shape: shapes[Math.floor(Math.random() * shapes.length)],
+          texture: textures[Math.floor(Math.random() * textures.length)]
+        };
+      };
+
+      const features = analyzeImageColors(selectedImage);
+      
+      // Advanced crop database with visual indicators
       const crops = [
         {
           name: "Tomato",
           variety: "Cherry Tomato",
           indicators: ["red", "round", "cluster"],
+          confidence: features.dominantColor === 'red' && features.shape === 'round' ? 95 : 75,
           nutritionalValue: {
-            vitamin_c: "High",
-            lycopene: "Very High",
-            potassium: "Moderate",
-            folate: "Good"
+            vitamin_c: "High (23mg per 100g)",
+            lycopene: "Very High (2.5mg per 100g)",
+            potassium: "Moderate (237mg per 100g)",
+            folate: "Good (15mcg per 100g)"
           }
         },
         {
@@ -184,26 +219,30 @@ export default function CropAnalysis() {
                             className="hidden"
                             id="image-upload"
                           />
-                          <label htmlFor="image-upload">
-                            <Button variant="outline" className="cursor-pointer">
-                              <Upload className="h-4 w-4 mr-2" />
-                              Upload Photo
-                            </Button>
-                          </label>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            onChange={handleImageUpload}
-                            className="hidden"
-                            id="camera-capture"
-                          />
-                          <label htmlFor="camera-capture">
-                            <Button variant="outline" className="cursor-pointer">
-                              <Camera className="h-4 w-4 mr-2" />
-                              Take Photo
-                            </Button>
-                          </label>
+                           <Button 
+                             variant="outline" 
+                             onClick={() => triggerFileInput('image-upload')}
+                             className="cursor-pointer"
+                           >
+                             <Upload className="h-4 w-4 mr-2" />
+                             Upload Photo
+                           </Button>
+                           <input
+                             type="file"
+                             accept="image/*"
+                             capture="environment"
+                             onChange={handleImageUpload}
+                             className="hidden"
+                             id="camera-capture"
+                           />
+                           <Button 
+                             variant="outline" 
+                             onClick={() => triggerFileInput('camera-capture')}
+                             className="cursor-pointer"
+                           >
+                             <Camera className="h-4 w-4 mr-2" />
+                             Take Photo
+                           </Button>
                         </div>
                       </div>
                     </div>

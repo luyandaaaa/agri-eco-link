@@ -163,6 +163,63 @@ export default function AIFeatures() {
     }
   };
 
+  const handleRecommendationAction = (rec: Recommendation) => {
+    if (rec.action === "Add to Cart") {
+      toast.success(`${rec.title.split(' ')[0]} added to cart!`);
+    } else if (rec.action === "View Recipe") {
+      showFullRecipe(rec.title);
+    } else if (rec.action === "Explore Seasonal") {
+      showSeasonalRecommendations();
+    } else {
+      toast.success(`${rec.action} clicked!`);
+    }
+  };
+
+  const showFullRecipe = (recipeTitle: string) => {
+    const fullRecipe = `
+    ${recipeTitle}
+    
+    Ingredients:
+    • 4 large carrots, peeled and chopped
+    • 1 inch fresh ginger, peeled
+    • 1 onion, chopped
+    • 2 cloves garlic, minced
+    • 4 cups vegetable broth
+    • 1 can coconut milk
+    • Salt and pepper to taste
+    
+    Instructions:
+    1. Heat olive oil in a large pot over medium heat
+    2. Add onions and cook until translucent
+    3. Add garlic and ginger, cook for 1 minute
+    4. Add carrots and broth, bring to boil
+    5. Simmer for 20 minutes until carrots are tender
+    6. Blend until smooth, add coconut milk
+    7. Season with salt and pepper
+    8. Serve hot with fresh herbs
+    
+    Prep Time: 15 minutes
+    Cook Time: 30 minutes
+    Serves: 4 people
+    `;
+    
+    toast.success("Recipe details loaded!");
+    alert(fullRecipe);
+  };
+
+  const showSeasonalRecommendations = () => {
+    const fallHarvest = [
+      "🍎 Fresh Apples - Peak season, best prices",
+      "🥕 Root Vegetables - Carrots, beets, turnips", 
+      "🎃 Winter Squash - Pumpkin, butternut, acorn",
+      "🥬 Leafy Greens - Kale, spinach, chard",
+      "🌰 Nuts & Seeds - Walnuts, chestnuts, sunflower seeds"
+    ];
+    
+    toast.success("Fall harvest recommendations loaded!");
+    alert(`Fall Harvest Recommendations:\n\n${fallHarvest.join('\n')}`);
+  };
+
   return (
     <ConsumerLayout currentPage="AI Features">
       <div className="min-h-screen bg-muted/30 p-6">

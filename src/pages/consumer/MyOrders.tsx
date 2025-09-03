@@ -117,13 +117,67 @@ export default function MyOrders() {
   };
 
   const viewInvoice = (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+    
     toast.success("Generating invoice... Download will start shortly.");
-    // Simulate invoice generation and download
+    
+    // Generate detailed invoice content
+    const invoiceContent = `
+FRESH FROM LOCAL FARMS
+Invoice #${orderId}
+=====================================
+
+Order Details:
+Order ID: ${orderId}
+Order Date: ${new Date(order.orderDate).toLocaleDateString()}
+Customer: John Doe
+Email: customer@example.com
+Phone: +27 123 456 789
+
+Delivery Address:
+${order.address}
+
+Farmer Details:
+${order.farmer}
+Contact: farmer@${order.farmer.toLowerCase().replace(/\s+/g, '')}.com
+
+Items Ordered:
+=====================================
+${order.items.map(item => 
+  `${item.name}
+   Quantity: ${item.quantity}
+   Unit Price: R${item.price.toFixed(2)}
+   Subtotal: R${(item.quantity * item.price).toFixed(2)}
+   Farmer: ${item.farmer}`
+).join('\n\n')}
+
+=====================================
+Order Summary:
+Subtotal: R${order.total.toFixed(2)}
+Delivery Fee: R35.00
+Total Amount: R${(order.total + 35.00).toFixed(2)}
+
+Payment Status: Paid
+Payment Method: Card ending in ****1234
+Transaction Date: ${new Date(order.orderDate).toLocaleDateString()}
+
+Estimated Delivery: ${new Date(order.estimatedDelivery).toLocaleDateString()}
+${order.trackingNumber ? `Tracking Number: ${order.trackingNumber}` : ''}
+
+Thank you for supporting local farmers!
+Contact us: support@freshfromlocalfarms.co.za
+=====================================
+    `;
+    
     setTimeout(() => {
+      const blob = new Blob([invoiceContent], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = 'data:text/plain;charset=utf-8,Invoice for Order ' + orderId;
+      link.href = url;
       link.download = `invoice-${orderId}.txt`;
       link.click();
+      window.URL.revokeObjectURL(url);
     }, 1000);
   };
 
@@ -169,10 +223,10 @@ export default function MyOrders() {
                           Placed on {new Date(order.orderDate).toLocaleDateString()}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-primary">${order.total.toFixed(2)}</p>
-                        <p className="text-sm text-muted-foreground">Total</p>
-                      </div>
+                         <div className="text-right">
+                           <p className="text-lg font-bold text-primary">R{order.total.toFixed(2)}</p>
+                           <p className="text-sm text-muted-foreground">Total</p>
+                         </div>
                     </div>
                   </CardHeader>
                   
@@ -199,9 +253,9 @@ export default function MyOrders() {
                             <div className="flex-1">
                               <p className="font-medium text-sm">{item.name}</p>
                               <p className="text-xs text-muted-foreground">{item.farmer}</p>
-                              <p className="text-sm">
-                                {item.quantity}x ${item.price.toFixed(2)}
-                              </p>
+                               <p className="text-sm">
+                                 {item.quantity}x R{item.price.toFixed(2)}
+                               </p>
                             </div>
                           </div>
                         ))}
@@ -288,10 +342,10 @@ export default function MyOrders() {
                             Placed on {new Date(order.orderDate).toLocaleDateString()}
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-primary">${order.total.toFixed(2)}</p>
-                          <p className="text-sm text-muted-foreground">Total</p>
-                        </div>
+                         <div className="text-right">
+                           <p className="text-lg font-bold text-primary">R{order.total.toFixed(2)}</p>
+                           <p className="text-sm text-muted-foreground">Total</p>
+                         </div>
                       </div>
                     </CardHeader>
                     
@@ -316,9 +370,9 @@ export default function MyOrders() {
                               <div className="flex-1">
                                 <p className="font-medium text-sm">{item.name}</p>
                                 <p className="text-xs text-muted-foreground">{item.farmer}</p>
-                                <p className="text-sm">
-                                  {item.quantity}x ${item.price.toFixed(2)}
-                                </p>
+                                 <p className="text-sm">
+                                   {item.quantity}x R{item.price.toFixed(2)}
+                                 </p>
                               </div>
                             </div>
                           ))}
