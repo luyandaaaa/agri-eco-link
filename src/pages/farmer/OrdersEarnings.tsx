@@ -12,7 +12,8 @@ import {
   TrendingUp,
   Calendar,
   Download,
-  X
+  X,
+  Navigation
 } from "lucide-react";
 import { FarmerLayout } from "@/components/layouts/FarmerLayout";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -84,9 +85,18 @@ export default function OrdersEarnings() {
   ];
 
   const handleAcceptOrder = (orderId) => {
-    setOrders(orders.map(order => 
+    const updatedOrders = orders.map(order => 
       order.id === orderId ? { ...order, status: 'confirmed' } : order
-    ));
+    );
+    setOrders(updatedOrders);
+    
+    // Update in localStorage
+    const storedOrders = JSON.parse(localStorage.getItem('farmerOrders') || '[]');
+    const updatedStoredOrders = storedOrders.map(order => 
+      order.id === orderId ? { ...order, status: 'confirmed' } : order
+    );
+    localStorage.setItem('farmerOrders', JSON.stringify(updatedStoredOrders));
+    
     toast({
       title: "Order Accepted",
       description: "Order has been confirmed and customer notified.",
@@ -94,13 +104,54 @@ export default function OrdersEarnings() {
   };
 
   const handleDeclineOrder = (orderId) => {
-    setOrders(orders.map(order => 
+    const updatedOrders = orders.map(order => 
       order.id === orderId ? { ...order, status: 'declined' } : order
-    ));
+    );
+    setOrders(updatedOrders);
+    
+    // Update in localStorage
+    const storedOrders = JSON.parse(localStorage.getItem('farmerOrders') || '[]');
+    const updatedStoredOrders = storedOrders.map(order => 
+      order.id === orderId ? { ...order, status: 'declined' } : order
+    );
+    localStorage.setItem('farmerOrders', JSON.stringify(updatedStoredOrders));
+    
     toast({
       title: "Order Declined",
       description: "Order has been declined and customer notified.",
       variant: "destructive"
+    });
+  };
+
+  const handleAssignDelivery = (orderId) => {
+    toast({
+      title: "Assign Delivery",
+      description: "Redirecting to delivery matching...",
+    });
+    // In a real app, would navigate to delivery assignment page
+  };
+
+  const handleDownloadPayments = () => {
+    // Create CSV content
+    const csvContent = [
+      ['Date', 'Customer', 'Order ID', 'Amount', 'Status'],
+      ['Jan 14, 2024', 'Green Market Co-op', '#ORD-002', 'R250.00', 'Completed'],
+      ['Jan 12, 2024', 'Urban Fresh Store', '#ORD-003', 'R320.00', 'Completed'],
+      ['Jan 10, 2024', 'Fresh Foods Ltd', '#ORD-004', 'R180.00', 'Completed']
+    ].map(row => row.join(',')).join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'payment-history.csv';
+    link.click();
+    window.URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Export Complete",
+      description: "Payment history has been downloaded as CSV file.",
     });
   };
 
@@ -116,6 +167,7 @@ export default function OrdersEarnings() {
       case 'pending': return 'secondary';
       case 'confirmed': return 'default';
       case 'delivered': return 'outline';
+      case 'declined': return 'destructive';
       default: return 'secondary';
     }
   };
@@ -244,14 +296,24 @@ export default function OrdersEarnings() {
                             </>
                           )}
                           {order.status === 'confirmed' && (
-                            <Button 
-                              size="sm" 
-                              variant="secondary"
-                              onClick={() => handleTrackOrder(order.id)}
-                            >
-                              <Truck className="h-4 w-4 mr-1" />
-                              Track
-                            </Button>
+                            <>
+                              <Button 
+                                size="sm" 
+                                variant="default"
+                                onClick={() => handleAssignDelivery(order.id)}
+                              >
+                                <Truck className="h-4 w-4 mr-1" />
+                                Assign Delivery
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="secondary"
+                                onClick={() => handleTrackOrder(order.id)}
+                              >
+                                <Navigation className="h-4 w-4 mr-1" />
+                                Track
+                              </Button>
+                            </>
                           )}
                         </div>
                       </div>
@@ -321,7 +383,11 @@ export default function OrdersEarnings() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Payment History</CardTitle>
-                  <Button variant="outline" className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2"
+                    onClick={handleDownloadPayments}
+                  >
                     <Download className="h-4 w-4" />
                     Export
                   </Button>

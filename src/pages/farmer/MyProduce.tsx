@@ -82,6 +82,12 @@ export default function MyProduce() {
       return;
     }
 
+    // Handle image - create object URL if file uploaded, otherwise use default
+    let imageUrl = spinachImage;
+    if (newProduct.image) {
+      imageUrl = URL.createObjectURL(newProduct.image);
+    }
+
     const product = {
       id: Date.now(),
       name: newProduct.name,
@@ -90,7 +96,7 @@ export default function MyProduce() {
       unit: newProduct.unit,
       stock: parseInt(newProduct.stock),
       status: parseInt(newProduct.stock) < 10 ? "low_stock" : "active",
-      image: newProduct.image || spinachImage,
+      image: imageUrl,
       description: newProduct.description
     };
 

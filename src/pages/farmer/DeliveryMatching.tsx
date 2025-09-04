@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { DeliveryTracking } from "@/components/DeliveryTracking";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,11 @@ import {
 import { FarmerLayout } from "@/components/layouts/FarmerLayout";
 
 export default function DeliveryMatching() {
+  const [trackingOpen, setTrackingOpen] = useState(false);
+  const [selectedDelivery, setSelectedDelivery] = useState("");
+  const [showPickupForm, setShowPickupForm] = useState(false);
+  const [savedSettings, setSavedSettings] = useState(true);
+  
   const [deliveries] = useState([
     {
       id: "DEL-001",
@@ -93,10 +99,8 @@ export default function DeliveryMatching() {
   });
 
   const handleTrackDelivery = (deliveryId) => {
-    toast({
-      title: "Tracking Delivery",
-      description: "Opening real-time delivery tracking...",
-    });
+    setSelectedDelivery(deliveryId);
+    setTrackingOpen(true);
   };
 
   const handleRequestQuote = (driverId) => {
@@ -107,10 +111,21 @@ export default function DeliveryMatching() {
   };
 
   const handleSavePickupSettings = () => {
+    setSavedSettings(true);
+    setShowPickupForm(false);
     toast({
       title: "Settings Saved",
       description: "Pickup settings have been saved successfully.",
     });
+  };
+
+  const handleEditPickupSettings = () => {
+    setShowPickupForm(true);
+  };
+
+  const handleAddPickupSettings = () => {
+    setSavedSettings(false);
+    setShowPickupForm(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -329,66 +344,117 @@ export default function DeliveryMatching() {
           <TabsContent value="settings">
             <Card className="shadow-card">
               <CardHeader>
-                <CardTitle>Pickup Location Settings</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Pickup Location Settings</CardTitle>
+                  {savedSettings && !showPickupForm && (
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={handleEditPickupSettings}>
+                        Edit Settings
+                      </Button>
+                      <Button variant="secondary" size="sm" onClick={handleAddPickupSettings}>
+                        Add New
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="location">Pickup Location Type</Label>
-                    <Input 
-                      id="location" 
-                      value={pickupSettings.location}
-                      onChange={(e) => setPickupSettings({...pickupSettings, location: e.target.value})}
-                    />
+              <CardContent>
+                {savedSettings && !showPickupForm ? (
+                  <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold">Saved Pickup Location</h3>
+                      <Badge variant="outline">Active</Badge>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <strong>Location:</strong> {pickupSettings.location}
+                      </div>
+                      <div>
+                        <strong>Contact:</strong> {pickupSettings.contactName}
+                      </div>
+                      <div className="md:col-span-2">
+                        <strong>Address:</strong> {pickupSettings.address}
+                      </div>
+                      <div>
+                        <strong>Phone:</strong> {pickupSettings.contactPhone}
+                      </div>
+                      <div className="md:col-span-2">
+                        <strong>Instructions:</strong> {pickupSettings.specialInstructions}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="contactName">Contact Name</Label>
-                    <Input 
-                      id="contactName" 
-                      value={pickupSettings.contactName}
-                      onChange={(e) => setPickupSettings({...pickupSettings, contactName: e.target.value})}
-                    />
+                ) : (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="location">Pickup Location Type</Label>
+                        <Input 
+                          id="location" 
+                          value={pickupSettings.location}
+                          onChange={(e) => setPickupSettings({...pickupSettings, location: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="contactName">Contact Name</Label>
+                        <Input 
+                          id="contactName" 
+                          value={pickupSettings.contactName}
+                          onChange={(e) => setPickupSettings({...pickupSettings, contactName: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="address">Full Address</Label>
+                      <Input 
+                        id="address" 
+                        value={pickupSettings.address}
+                        onChange={(e) => setPickupSettings({...pickupSettings, address: e.target.value})}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="contactPhone">Contact Phone</Label>
+                      <Input 
+                        id="contactPhone" 
+                        value={pickupSettings.contactPhone}
+                        onChange={(e) => setPickupSettings({...pickupSettings, contactPhone: e.target.value})}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="instructions">Special Instructions</Label>
+                      <Input 
+                        id="instructions" 
+                        value={pickupSettings.specialInstructions}
+                        onChange={(e) => setPickupSettings({...pickupSettings, specialInstructions: e.target.value})}
+                        placeholder="e.g., Call when arriving, specific gate instructions..."
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button onClick={handleSavePickupSettings}>
+                        Save Pickup Settings
+                      </Button>
+                      {savedSettings && (
+                        <Button variant="outline" onClick={() => setShowPickupForm(false)}>
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="address">Full Address</Label>
-                  <Input 
-                    id="address" 
-                    value={pickupSettings.address}
-                    onChange={(e) => setPickupSettings({...pickupSettings, address: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="contactPhone">Contact Phone</Label>
-                  <Input 
-                    id="contactPhone" 
-                    value={pickupSettings.contactPhone}
-                    onChange={(e) => setPickupSettings({...pickupSettings, contactPhone: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="instructions">Special Instructions</Label>
-                  <Input 
-                    id="instructions" 
-                    value={pickupSettings.specialInstructions}
-                    onChange={(e) => setPickupSettings({...pickupSettings, specialInstructions: e.target.value})}
-                    placeholder="e.g., Call when arriving, specific gate instructions..."
-                  />
-                </div>
-
-                <Button 
-                  className="w-full md:w-auto"
-                  onClick={handleSavePickupSettings}
-                >
-                  Save Pickup Settings
-                </Button>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Delivery Tracking Modal */}
+        <DeliveryTracking 
+          isOpen={trackingOpen}
+          onClose={() => setTrackingOpen(false)}
+          deliveryId={selectedDelivery}
+        />
       </div>
     </FarmerLayout>
   );
