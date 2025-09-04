@@ -18,6 +18,7 @@ import CommunityForum from "./pages/farmer/CommunityForum";
 import EducationHub from "./pages/farmer/EducationHub";
 import ProfileWallet from "./pages/farmer/ProfileWallet";
 import FarmerSettings from "./pages/farmer/Settings";
+import ToolRental from "./pages/farmer/ToolRental";
 
 // Consumer Pages
 import Marketplace from "./pages/consumer/Marketplace";
@@ -55,6 +56,7 @@ const App = () => (
           <Route path="/farmer/delivery-matching" element={<DeliveryMatching />} />
           <Route path="/farmer/community-forum" element={<CommunityForum />} />
           <Route path="/farmer/education-hub" element={<EducationHub />} />
+          <Route path="/farmer/tool-rental" element={<ToolRental />} />
           <Route path="/farmer/profile-wallet" element={<ProfileWallet />} />
           <Route path="/farmer/settings" element={<FarmerSettings />} />
           

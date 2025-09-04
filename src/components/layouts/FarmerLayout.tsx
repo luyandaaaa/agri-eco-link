@@ -12,7 +12,8 @@ import {
   BookOpen, 
   User, 
   Settings,
-  LogOut
+  LogOut,
+  Wrench
 } from "lucide-react";
 
 interface FarmerLayoutProps {
@@ -47,6 +48,7 @@ export function FarmerLayout({ children, currentPage }: FarmerLayoutProps) {
     { icon: Truck, label: "Delivery Matching", path: "/farmer/delivery-matching" },
     { icon: MessageSquare, label: "Community Forum", path: "/farmer/community-forum" },
     { icon: BookOpen, label: "Education Hub", path: "/farmer/education-hub" },
+    { icon: Wrench, label: "Tool Rental", path: "/farmer/tool-rental" },
     { icon: User, label: "Profile & Wallet", path: "/farmer/profile-wallet" },
     { icon: Settings, label: "Settings", path: "/farmer/settings" },
   ];

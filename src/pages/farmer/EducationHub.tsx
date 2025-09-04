@@ -24,7 +24,10 @@ import { ChatBot } from "@/components/ChatBot";
 
 export default function EducationHub() {
   const [selectedLanguage, setSelectedLanguage] = useState("English");
-  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [enrolledCourses, setEnrolledCourses] = useState([1]);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [selectedArticle, setSelectedArticle] = useState(null);
 
   const handleStartCourse = (courseId) => {
     if (!enrolledCourses.includes(courseId)) {
@@ -36,10 +39,56 @@ export default function EducationHub() {
     }
   };
 
-  const handleDownloadCertificate = (courseTitle) => {
+  const handleContinueCourse = (course) => {
+    setSelectedCourse(course);
     toast({
-      title: "Certificate Generated",
-      description: `Certificate for "${courseTitle}" is being prepared for download.`,
+      title: "Continuing Course",
+      description: `Continuing with "${course.title}"`,
+    });
+  };
+
+  const handleWatchVideo = (video) => {
+    setSelectedVideo(video);
+    toast({
+      title: "Playing Video",
+      description: `Now playing: "${video.title}"`,
+    });
+  };
+
+  const handleReadArticle = (article) => {
+    setSelectedArticle(article);
+    toast({
+      title: "Opening Article",
+      description: `Opening: "${article.title}"`,
+    });
+  };
+
+  const handleDownloadArticle = (articleTitle) => {
+    toast({
+      title: "Downloading Article",
+      description: `"${articleTitle}" is being downloaded as PDF.`,
+    });
+  };
+
+  const handleDownloadCertificate = (courseTitle) => {
+    const element = document.createElement("a");
+    const file = new Blob([`Certificate of Completion\n\nThis certifies that [Farmer Name] has successfully completed the course:\n\n"${courseTitle}"\n\nDate: ${new Date().toLocaleDateString()}\nFarm2City Education Hub`], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `${courseTitle.replace(/\s+/g, '_')}_Certificate.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
+    toast({
+      title: "Certificate Downloaded",
+      description: `Certificate for "${courseTitle}" has been downloaded.`,
+    });
+  };
+
+  const handleViewCertificate = (courseTitle) => {
+    toast({
+      title: "Viewing Certificate", 
+      description: `Opening certificate for "${courseTitle}"`,
     });
   };
   
@@ -324,10 +373,11 @@ export default function EducationHub() {
                       <Button 
                         className="flex-1" 
                         variant={course.progress > 0 ? "default" : "secondary"}
+                        onClick={() => course.progress > 0 ? handleContinueCourse(course) : handleStartCourse(course.id)}
                       >
-                        {course.progress > 0 ? "Continue" : "Start Course"}
+                        {course.progress > 0 ? "Continue Learning" : "Start Course"}
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => handleContinueCourse(course)}>
                         <FileText className="h-4 w-4" />
                       </Button>
                     </div>
@@ -362,7 +412,11 @@ export default function EducationHub() {
                           </Badge>
                         ))}
                       </div>
-                      <Button className="w-full" size="sm">
+                      <Button 
+                        className="w-full" 
+                        size="sm"
+                        onClick={() => handleWatchVideo(video)}
+                      >
                         <Play className="h-4 w-4 mr-1" />
                         Watch Now
                       </Button>
@@ -400,10 +454,24 @@ export default function EducationHub() {
                           <FileText className="h-8 w-8 text-primary mx-auto mb-1" />
                           <p className="text-xs text-muted-foreground">{article.format}</p>
                         </div>
-                        <Button variant="outline" size="sm">
-                          <Download className="h-4 w-4 mr-1" />
-                          Download
-                        </Button>
+                        <div className="flex flex-col gap-1">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleReadArticle(article)}
+                          >
+                            <FileText className="h-4 w-4 mr-1" />
+                            Read
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDownloadArticle(article.title)}
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -426,10 +494,19 @@ export default function EducationHub() {
                     <span className="text-sm">Verified Certificate</span>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => handleViewCertificate("Digital Marketing for Farmers")}
+                    >
                       View Certificate
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDownloadCertificate("Digital Marketing for Farmers")}
+                    >
                       <Download className="h-4 w-4" />
                     </Button>
                   </div>

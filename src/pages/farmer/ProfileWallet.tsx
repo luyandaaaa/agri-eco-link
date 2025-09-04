@@ -22,7 +22,9 @@ import {
   TrendingUp,
   Plus,
   Save,
-  X
+  X,
+  FileText,
+  RefreshCw
 } from "lucide-react";
 import { FarmerLayout } from "@/components/layouts/FarmerLayout";
 
@@ -38,8 +40,51 @@ export default function ProfileWallet() {
     established: "1987",
     farmSize: "15 hectares",
     certifications: ["Organic Certified", "Fair Trade"],
-    specialties: ["Organic Vegetables", "Heritage Seeds", "Sustainable Farming"]
+    specialties: ["Organic Vegetables", "Heritage Seeds", "Sustainable Farming"],
+    profilePicture: null
   });
+
+  const [creditReport, setCreditReport] = useState({
+    score: 720,
+    status: "Good",
+    lastUpdated: "2024-01-15",
+    onTimeDeliveries: 98,
+    customerRatings: 4.8,
+    platformActivity: "8 months",
+    paymentHistory: "Excellent",
+    totalTransactions: 45
+  });
+
+  const handleProfilePictureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFarmer({...farmer, profilePicture: e.target?.result as string});
+        toast({
+          title: "Profile Picture Updated",
+          description: "Your profile picture has been successfully updated.",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGenerateNewCreditReport = () => {
+    // Simulate generating new credit report
+    const newScore = Math.floor(Math.random() * 100) + 650; // Random score between 650-750
+    setCreditReport({
+      ...creditReport,
+      score: newScore,
+      status: newScore >= 700 ? "Good" : newScore >= 600 ? "Fair" : "Poor",
+      lastUpdated: new Date().toISOString().split('T')[0]
+    });
+    
+    toast({
+      title: "Credit Report Generated",
+      description: "Your new credit report has been generated successfully.",
+    });
+  };
 
   const [wallet] = useState({
     balance: 3420.50,
@@ -252,10 +297,29 @@ export default function ProfileWallet() {
                     <CardTitle>Profile Photo</CardTitle>
                   </CardHeader>
                   <CardContent className="text-center">
-                    <div className="w-32 h-32 bg-gradient-primary rounded-full mx-auto mb-4 flex items-center justify-center text-4xl">
-                      👩🏿‍🌾
+                    <div className="w-32 h-32 bg-gradient-primary rounded-full mx-auto mb-4 flex items-center justify-center text-4xl overflow-hidden">
+                      {farmer.profilePicture ? (
+                        <img 
+                          src={farmer.profilePicture} 
+                          alt="Profile" 
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <span>👩🏿‍🌾</span>
+                      )}
                     </div>
-                    <Button variant="outline" className="w-full">
+                    <input
+                      type="file"
+                      id="profile-picture"
+                      accept="image/*"
+                      onChange={handleProfilePictureUpload}
+                      className="hidden"
+                    />
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => document.getElementById('profile-picture')?.click()}
+                    >
                       <Camera className="h-4 w-4 mr-2" />
                       Upload Photo
                     </Button>
@@ -443,28 +507,46 @@ export default function ProfileWallet() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-center mb-4">
-                    <div className="text-4xl font-bold text-primary mb-2">720</div>
-                    <p className="text-sm text-muted-foreground">Good Credit Score</p>
+                    <div className="text-4xl font-bold text-primary mb-2">{creditReport.score}</div>
+                    <p className="text-sm text-muted-foreground">{creditReport.status} Credit Score</p>
+                    <p className="text-xs text-muted-foreground">Last updated: {creditReport.lastUpdated}</p>
                   </div>
                   
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>On-time deliveries:</span>
-                      <span className="font-medium">98%</span>
+                      <span className="font-medium">{creditReport.onTimeDeliveries}%</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Customer ratings:</span>
-                      <span className="font-medium">4.8/5</span>
+                      <span className="font-medium">{creditReport.customerRatings}/5</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Platform activity:</span>
-                      <span className="font-medium">8 months</span>
+                      <span className="font-medium">{creditReport.platformActivity}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Payment history:</span>
+                      <span className="font-medium">{creditReport.paymentHistory}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Total transactions:</span>
+                      <span className="font-medium">{creditReport.totalTransactions}</span>
                     </div>
                   </div>
                   
-                  <Button variant="outline" className="w-full mt-4">
-                    View Credit Report
-                  </Button>
+                  <div className="flex gap-2 mt-4">
+                    <Button variant="outline" className="flex-1">
+                      <FileText className="h-4 w-4 mr-2" />
+                      View Full Report
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={handleGenerateNewCreditReport}
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
