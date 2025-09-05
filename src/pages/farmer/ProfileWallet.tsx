@@ -45,7 +45,7 @@ export default function ProfileWallet() {
   });
 
   const [creditReport, setCreditReport] = useState({
-    score: 720,
+    score: 85,
     status: "Good",
     lastUpdated: "2024-01-15",
     onTimeDeliveries: 98,
@@ -81,7 +81,7 @@ export default function ProfileWallet() {
   };
 
   const calculateCreditScore = () => {
-    // Calculate score based on transaction metrics
+    // Calculate score based on transaction metrics out of 100
     let score = 0;
     
     // On-time deliveries (30%)
@@ -101,26 +101,30 @@ export default function ProfileWallet() {
     // Verified bank account (10%)
     score += creditReport.verifiedBankAccount ? 10 : 0;
     
-    return Math.min(Math.round(score * 10), 850); // Scale to 850 max
+    return Math.min(Math.round(score), 100); // Scale to 100 max
   };
 
   const handleGenerateNewCreditReport = () => {
     const newScore = calculateCreditScore();
-    const newStatus = newScore >= 700 ? "Good" : newScore >= 600 ? "Fair" : "Poor";
+    const newStatus = newScore >= 80 ? "Excellent" : newScore >= 60 ? "Good" : newScore >= 40 ? "Fair" : "Poor";
     
     setCreditReport({
       ...creditReport,
       score: newScore,
       status: newStatus,
       lastUpdated: new Date().toISOString().split('T')[0],
-      creditworthinessSummary: newScore >= 700 ? 
+      creditworthinessSummary: newScore >= 80 ? 
+        "Excellent farmer with outstanding delivery and payment history" :
+        newScore >= 60 ?
         "Reliable farmer with consistent delivery and payment history" :
-        newScore >= 600 ? 
+        newScore >= 40 ? 
         "Moderate risk farmer with room for improvement" :
         "High risk farmer requiring financial support",
-      recommendation: newScore >= 700 ?
+      recommendation: newScore >= 80 ?
+        "Excellent borrower suitable for premium agricultural loans up to R100,000" :
+        newScore >= 60 ?
         "Low-risk borrower suitable for agricultural loans up to R50,000" :
-        newScore >= 600 ?
+        newScore >= 40 ?
         "Moderate-risk borrower suitable for secured loans up to R25,000" :
         "High-risk borrower requiring collateral for loans up to R10,000"
     });
@@ -145,9 +149,76 @@ export default function ProfileWallet() {
   };
 
   const handleBankingUpdate = () => {
+    setShowBankingForm(false);
     toast({
       title: "Banking Details Updated",
       description: "Your banking information has been updated successfully.",
+    });
+  };
+
+  const handlePersonalInfoSave = () => {
+    setShowPersonalForm(false);
+    toast({
+      title: "Personal Information Saved",
+      description: "Your personal information has been saved successfully.",
+    });
+  };
+
+  const handleDownloadCreditReport = () => {
+    const creditReportContent = `
+FARM2CITY CREDIT REPORT
+=======================
+
+Farmer: ${farmer.name}
+Farm: ${farmer.farmName}
+Report Date: ${new Date().toLocaleDateString()}
+
+CREDIT SCORE: ${creditReport.score}/100
+Credit Status: ${creditReport.status}
+
+CREDITWORTHINESS ASSESSMENT
+===========================
+${creditReport.creditworthinessSummary}
+
+FINANCIAL INSTITUTION RECOMMENDATION
+====================================
+${creditReport.recommendation}
+
+TRANSACTION METRICS
+==================
+- Total completed sales: ${creditReport.totalCompletedSales}
+- Total value of produce sold: R${creditReport.totalValueSold.toFixed(2)}
+- Average payment time from buyers: ${creditReport.averagePaymentTime} days
+- Refunds or disputes: ${creditReport.refundsDisputes}
+- Active on platform since: ${creditReport.activeSince}
+- Payment method: ${creditReport.paymentMethod}
+- Verified bank account: ${creditReport.verifiedBankAccount ? 'Yes' : 'No'}
+- Missed deliveries: ${creditReport.missedDeliveries}
+
+PERFORMANCE METRICS
+==================
+- On-time deliveries: ${creditReport.onTimeDeliveries}%
+- Customer ratings: ${creditReport.customerRatings}/5
+- Platform activity: ${creditReport.platformActivity}
+- Payment history: ${creditReport.paymentHistory}
+- Total transactions: ${creditReport.totalTransactions}
+
+Generated on: ${new Date().toLocaleString()}
+    `;
+
+    const blob = new Blob([creditReportContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `farm2city-credit-report-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
+    toast({
+      title: "Credit Report Downloaded",
+      description: "Your credit report has been downloaded successfully.",
     });
   };
 
@@ -245,6 +316,9 @@ Generated on: ${new Date().toLocaleString()}
     branchCode: "051001"
   });
 
+  const [showBankingForm, setShowBankingForm] = useState(false);
+  const [showPersonalForm, setShowPersonalForm] = useState(true);
+
   return (
     <FarmerLayout currentPage="Profile & Wallet">
       <div className="space-y-8">
@@ -328,83 +402,131 @@ Generated on: ${new Date().toLocaleString()}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card className="shadow-card lg:col-span-2">
                 <CardHeader>
-                  <CardTitle>Personal Information</CardTitle>
+                  <CardTitle className="flex items-center justify-between">
+                    Personal Information
+                    {!showPersonalForm && (
+                      <Button variant="outline" size="sm" onClick={() => setShowPersonalForm(true)}>
+                        Edit Profile
+                      </Button>
+                    )}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input 
-                        id="name" 
-                        value={farmer.name}
-                        onChange={(e) => setFarmer({...farmer, name: e.target.value})}
-                      />
+                  {showPersonalForm ? (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="name">Full Name</Label>
+                          <Input 
+                            id="name" 
+                            value={farmer.name}
+                            onChange={(e) => setFarmer({...farmer, name: e.target.value})}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="farmName">Farm Name</Label>
+                          <Input 
+                            id="farmName" 
+                            value={farmer.farmName}
+                            onChange={(e) => setFarmer({...farmer, farmName: e.target.value})}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="email">Email</Label>
+                          <Input 
+                            id="email" 
+                            type="email"
+                            value={farmer.email}
+                            onChange={(e) => setFarmer({...farmer, email: e.target.value})}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="phone">Phone Number</Label>
+                          <Input 
+                            id="phone" 
+                            value={farmer.phone}
+                            onChange={(e) => setFarmer({...farmer, phone: e.target.value})}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="established">Farm Established</Label>
+                          <Input 
+                            id="established" 
+                            value={farmer.established}
+                            onChange={(e) => setFarmer({...farmer, established: e.target.value})}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="farmSize">Farm Size</Label>
+                          <Input 
+                            id="farmSize" 
+                            value={farmer.farmSize}
+                            onChange={(e) => setFarmer({...farmer, farmSize: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="address">Farm Address</Label>
+                        <Input 
+                          id="address" 
+                          value={farmer.address}
+                          onChange={(e) => setFarmer({...farmer, address: e.target.value})}
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="bio">Farm Bio</Label>
+                        <Textarea 
+                          id="bio" 
+                          value={farmer.bio}
+                          onChange={(e) => setFarmer({...farmer, bio: e.target.value})}
+                          rows={4}
+                        />
+                      </div>
+                      
+                      <Button className="w-full md:w-auto" onClick={handlePersonalInfoSave}>
+                        Save Profile
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Full Name</p>
+                          <p className="font-medium">{farmer.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Farm Name</p>
+                          <p className="font-medium">{farmer.farmName}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Email</p>
+                          <p className="font-medium">{farmer.email}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Phone</p>
+                          <p className="font-medium">{farmer.phone}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Farm Established</p>
+                          <p className="font-medium">{farmer.established}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Farm Size</p>
+                          <p className="font-medium">{farmer.farmSize}</p>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Farm Address</p>
+                        <p className="font-medium">{farmer.address}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Farm Bio</p>
+                        <p className="font-medium">{farmer.bio}</p>
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="farmName">Farm Name</Label>
-                      <Input 
-                        id="farmName" 
-                        value={farmer.farmName}
-                        onChange={(e) => setFarmer({...farmer, farmName: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="email">Email</Label>
-                      <Input 
-                        id="email" 
-                        type="email"
-                        value={farmer.email}
-                        onChange={(e) => setFarmer({...farmer, email: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input 
-                        id="phone" 
-                        value={farmer.phone}
-                        onChange={(e) => setFarmer({...farmer, phone: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="established">Farm Established</Label>
-                      <Input 
-                        id="established" 
-                        value={farmer.established}
-                        onChange={(e) => setFarmer({...farmer, established: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="farmSize">Farm Size</Label>
-                      <Input 
-                        id="farmSize" 
-                        value={farmer.farmSize}
-                        onChange={(e) => setFarmer({...farmer, farmSize: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="address">Farm Address</Label>
-                    <Input 
-                      id="address" 
-                      value={farmer.address}
-                      onChange={(e) => setFarmer({...farmer, address: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="bio">Farm Bio</Label>
-                    <Textarea 
-                      id="bio" 
-                      value={farmer.bio}
-                      onChange={(e) => setFarmer({...farmer, bio: e.target.value})}
-                      rows={4}
-                    />
-                  </div>
-                  
-                  <Button className="w-full md:w-auto">
-                    Save Profile
-                  </Button>
+                  )}
                 </CardContent>
               </Card>
 
@@ -545,61 +667,105 @@ Generated on: ${new Date().toLocaleString()}
           <TabsContent value="banking">
             <Card className="shadow-card">
               <CardHeader>
-                <CardTitle>Banking Information</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  Banking Information
+                  {!showBankingForm && (
+                    <Button variant="outline" size="sm" onClick={() => setShowBankingForm(true)}>
+                      Edit Details
+                    </Button>
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="bankName">Bank Name</Label>
-                    <Input 
-                      id="bankName" 
-                      value={bankDetails.bankName}
-                      onChange={(e) => setBankDetails({...bankDetails, bankName: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="accountHolder">Account Holder</Label>
-                    <Input 
-                      id="accountHolder" 
-                      value={bankDetails.accountHolder}
-                      onChange={(e) => setBankDetails({...bankDetails, accountHolder: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="accountNumber">Account Number</Label>
-                    <Input 
-                      id="accountNumber" 
-                      value={bankDetails.accountNumber}
-                      onChange={(e) => setBankDetails({...bankDetails, accountNumber: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="branchCode">Branch Code</Label>
-                    <Input 
-                      id="branchCode" 
-                      value={bankDetails.branchCode}
-                      onChange={(e) => setBankDetails({...bankDetails, branchCode: e.target.value})}
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2 p-4 bg-primary/10 rounded-lg">
-                  <CreditCard className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium">Secure Banking</p>
-                    <p className="text-sm text-muted-foreground">Your banking details are encrypted and secure</p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button className="flex-1" onClick={handleBankingUpdate}>
-                    Update Banking Details
-                  </Button>
-                  <Button variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add New Account
-                  </Button>
-                </div>
+                {showBankingForm ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="bankName">Bank Name</Label>
+                        <Input 
+                          id="bankName" 
+                          value={bankDetails.bankName}
+                          onChange={(e) => setBankDetails({...bankDetails, bankName: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="accountHolder">Account Holder</Label>
+                        <Input 
+                          id="accountHolder" 
+                          value={bankDetails.accountHolder}
+                          onChange={(e) => setBankDetails({...bankDetails, accountHolder: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="accountNumber">Account Number</Label>
+                        <Input 
+                          id="accountNumber" 
+                          value={bankDetails.accountNumber}
+                          onChange={(e) => setBankDetails({...bankDetails, accountNumber: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="branchCode">Branch Code</Label>
+                        <Input 
+                          id="branchCode" 
+                          value={bankDetails.branchCode}
+                          onChange={(e) => setBankDetails({...bankDetails, branchCode: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 p-4 bg-primary/10 rounded-lg">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="font-medium">Secure Banking</p>
+                        <p className="text-sm text-muted-foreground">Your banking details are encrypted and secure</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button className="flex-1" onClick={handleBankingUpdate}>
+                        Update Banking Details
+                      </Button>
+                      <Button variant="outline" onClick={() => setShowBankingForm(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Bank Name</p>
+                        <p className="font-medium">{bankDetails.bankName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Account Holder</p>
+                        <p className="font-medium">{bankDetails.accountHolder}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Account Number</p>
+                        <p className="font-medium">{bankDetails.accountNumber}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Branch Code</p>
+                        <p className="font-medium">{bankDetails.branchCode}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 p-4 bg-primary/10 rounded-lg">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="font-medium">Secure Banking</p>
+                        <p className="text-sm text-muted-foreground">Your banking details are encrypted and secure</p>
+                      </div>
+                    </div>
+                    
+                    <Button variant="outline">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add New Account
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -719,7 +885,7 @@ Generated on: ${new Date().toLocaleString()}
                 
                 <div className="space-y-6">
                   <div className="text-center p-6 bg-primary/10 rounded-lg">
-                    <div className="text-4xl font-bold text-primary mb-2">{creditReport.score}/850</div>
+                    <div className="text-4xl font-bold text-primary mb-2">{creditReport.score}/100</div>
                     <p className="text-lg font-semibold">{creditReport.status} Credit Score</p>
                     <p className="text-sm text-muted-foreground mt-2">{creditReport.creditworthinessSummary}</p>
                     <p className="text-sm text-primary mt-2 font-medium">{creditReport.recommendation}</p>
@@ -790,7 +956,7 @@ Generated on: ${new Date().toLocaleString()}
                   </div>
 
                   <div className="flex gap-2 pt-4">
-                    <Button className="flex-1">
+                    <Button className="flex-1" onClick={handleDownloadCreditReport}>
                       <Download className="h-4 w-4 mr-2" />
                       Download Report
                     </Button>

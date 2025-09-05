@@ -35,7 +35,12 @@ export default function CommunityForum() {
       likes: 12,
       replies: 8,
       timeAgo: "2 hours ago",
-      tags: ["organic", "pest-control", "vegetables"]
+      tags: ["organic", "pest-control", "vegetables"],
+      liked: false,
+      repliesData: [
+        { id: 1, author: "Nomsa Dube", content: "Try neem oil spray, works great for aphids!", timeAgo: "1 hour ago" },
+        { id: 2, author: "Peter Smith", content: "Ladybugs are natural predators of aphids", timeAgo: "30 min ago" }
+      ]
     },
     {
       id: 2,
@@ -47,7 +52,11 @@ export default function CommunityForum() {
       likes: 18,
       replies: 15,
       timeAgo: "5 hours ago",
-      tags: ["fertilizer", "group-buy", "western-cape"]
+      tags: ["fertilizer", "group-buy", "western-cape"],
+      liked: false,
+      repliesData: [
+        { id: 1, author: "Johan du Plessis", content: "I'm interested! What type of fertilizer?", timeAgo: "4 hours ago" }
+      ]
     },
     {
       id: 3,
@@ -59,9 +68,40 @@ export default function CommunityForum() {
       likes: 34,
       replies: 22,
       timeAgo: "1 day ago",
-      tags: ["drought", "recovery", "water-conservation"]
+      tags: ["drought", "recovery", "water-conservation"],
+      liked: true,
+      repliesData: [
+        { id: 1, author: "Mary Johnson", content: "Inspiring story! Thanks for sharing your experience", timeAgo: "20 hours ago" }
+      ]
     }
   ]);
+
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [newReply, setNewReply] = useState("");
+  const [groupOrders, setGroupOrders] = useState([
+    {
+      id: 1,
+      title: "Organic Fertilizer - Western Cape",
+      organizer: "Sarah van der Merwe",
+      participants: 8,
+      maxParticipants: 10,
+      description: "Bulk purchase of organic compost. Need 2 more farmers to reach minimum order.",
+      status: "Open",
+      joined: false
+    },
+    {
+      id: 2,
+      title: "Seeds Bulk Order - Eastern Cape",
+      organizer: "Zanele Mthembu",
+      participants: 10,
+      maxParticipants: 10,
+      description: "Heritage vegetable seeds for spring planting. Order completed successfully.",
+      status: "Complete",
+      joined: true
+    }
+  ]);
+
+  const [mentorRequests, setMentorRequests] = useState({});
 
   const [mentors] = useState([
     {
@@ -146,7 +186,9 @@ export default function CommunityForum() {
       likes: 0,
       replies: 0,
       timeAgo: "Just now",
-      tags: newPost.tags.split(",").map(tag => tag.trim()).filter(Boolean)
+      tags: newPost.tags.split(",").map(tag => tag.trim()).filter(Boolean),
+      liked: false,
+      repliesData: []
     };
 
     setPosts([post, ...posts]);
@@ -158,12 +200,58 @@ export default function CommunityForum() {
   };
 
   const handleLikePost = (postId) => {
-    setPosts(posts.map(post => 
-      post.id === postId ? { ...post, likes: post.likes + 1 } : post
-    ));
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        const newLiked = !post.liked;
+        return { 
+          ...post, 
+          likes: newLiked ? post.likes + 1 : post.likes - 1,
+          liked: newLiked
+        };
+      }
+      return post;
+    }));
   };
 
-  const handleRequestMentorship = (mentorName) => {
+  const handleAddReply = (postId) => {
+    if (!newReply.trim()) return;
+    
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        const newReplyObj = {
+          id: Date.now(),
+          author: "Lindiwe Mthembu",
+          content: newReply,
+          timeAgo: "Just now"
+        };
+        return {
+          ...post,
+          replies: post.replies + 1,
+          repliesData: [...post.repliesData, newReplyObj]
+        };
+      }
+      return post;
+    }));
+    
+    setNewReply("");
+    toast({
+      title: "Reply Added",
+      description: "Your reply has been posted successfully!",
+    });
+  };
+
+  const handleJoinGroup = (groupId) => {
+    setGroupOrders(groupOrders.map(group => 
+      group.id === groupId ? { ...group, joined: true, participants: group.participants + 1 } : group
+    ));
+    toast({
+      title: "Joined Group Order",
+      description: "You've successfully joined the group order!",
+    });
+  };
+
+  const handleRequestMentorship = (mentorId, mentorName) => {
+    setMentorRequests({...mentorRequests, [mentorId]: "requested"});
     toast({
       title: "Mentorship Request Sent",
       description: `Your request has been sent to ${mentorName}. They will contact you soon.`,
@@ -195,10 +283,63 @@ export default function CommunityForum() {
               Connect, learn, and collaborate with fellow farmers
             </p>
           </div>
-          <Button className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            New Post
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                New Post
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Post</DialogTitle>
+                <DialogDescription>Share your thoughts with the farming community</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="postTitle">Title</Label>
+                  <Input 
+                    id="postTitle" 
+                    value={newPost.title}
+                    onChange={(e) => setNewPost({...newPost, title: e.target.value})}
+                    placeholder="What's your question or topic?"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="postContent">Content</Label>
+                  <Textarea 
+                    id="postContent" 
+                    value={newPost.content}
+                    onChange={(e) => setNewPost({...newPost, content: e.target.value})}
+                    placeholder="Share your thoughts, questions, or experiences..."
+                    rows={4}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="postCategory">Category</Label>
+                  <Input 
+                    id="postCategory" 
+                    value={newPost.category}
+                    onChange={(e) => setNewPost({...newPost, category: e.target.value})}
+                    placeholder="e.g., Pest Management, Success Stories"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="postTags">Tags (comma separated)</Label>
+                  <Input 
+                    id="postTags" 
+                    value={newPost.tags}
+                    onChange={(e) => setNewPost({...newPost, tags: e.target.value})}
+                    placeholder="organic, pest-control, vegetables"
+                  />
+                </div>
+                <Button className="w-full" onClick={handleCreatePost}>
+                  <Send className="h-4 w-4 mr-2" />
+                  Create Post
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Stats Overview */}
@@ -315,16 +456,26 @@ export default function CommunityForum() {
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                          <ThumbsUp className="h-4 w-4" />
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className={`flex items-center gap-1 ${post.liked ? 'text-red-500' : ''}`}
+                          onClick={() => handleLikePost(post.id)}
+                        >
+                          <Heart className={`h-4 w-4 ${post.liked ? 'fill-current' : ''}`} />
                           {post.likes}
                         </Button>
-                        <Button variant="ghost" size="sm" className="flex items-center gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="flex items-center gap-1"
+                          onClick={() => setSelectedPost(post)}
+                        >
                           <MessageCircle className="h-4 w-4" />
                           {post.replies} replies
                         </Button>
                       </div>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => setSelectedPost(post)}>
                         View Discussion
                       </Button>
                     </div>
@@ -369,12 +520,52 @@ export default function CommunityForum() {
                     </div>
                     
                     <div className="flex gap-2">
-                      <Button size="sm" className="flex-1" disabled={mentor.availability !== 'Available'}>
-                        Request Mentorship
+                      <Button 
+                        size="sm" 
+                        className="flex-1" 
+                        disabled={mentor.availability !== 'Available' || mentorRequests[mentor.id] === 'requested'}
+                        onClick={() => handleRequestMentorship(mentor.id, mentor.name)}
+                      >
+                        {mentorRequests[mentor.id] === 'requested' ? 'Requested' : 'Request Mentorship'}
                       </Button>
-                      <Button variant="outline" size="sm">
-                        View Profile
-                      </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            View Profile
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>{mentor.name}</DialogTitle>
+                            <DialogDescription>Mentor Profile Details</DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <p className="text-sm text-muted-foreground">Location</p>
+                              <p className="font-medium">{mentor.location}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Specialty</p>
+                              <p className="font-medium">{mentor.specialty}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Experience</p>
+                              <p className="font-medium">{mentor.experience}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Current Mentees</p>
+                              <p className="font-medium">{mentor.mentees} farmers</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Rating</p>
+                              <div className="flex items-center gap-1">
+                                <Star className="h-4 w-4 fill-current text-secondary" />
+                                <span className="font-medium">{mentor.rating}/5</span>
+                              </div>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </CardContent>
                 </Card>
@@ -422,48 +613,186 @@ export default function CommunityForum() {
           </TabsContent>
 
           <TabsContent value="groups">
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle>Active Group Orders</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-semibold">Organic Fertilizer - Western Cape</h3>
-                      <Badge variant="secondary">8/10 farmers</Badge>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">Group Orders</h2>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create New Group
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New Group Order</DialogTitle>
+                      <DialogDescription>Start a group purchase to get better prices</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="groupTitle">Order Title</Label>
+                        <Input id="groupTitle" placeholder="e.g., Organic Fertilizer Bulk Order" />
+                      </div>
+                      <div>
+                        <Label htmlFor="groupDescription">Description</Label>
+                        <Textarea id="groupDescription" placeholder="Describe what you're ordering..." />
+                      </div>
+                      <div>
+                        <Label htmlFor="maxParticipants">Maximum Participants</Label>
+                        <Input id="maxParticipants" type="number" placeholder="10" />
+                      </div>
+                      <Button className="w-full">Create Group Order</Button>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Bulk purchase of organic compost. Need 2 more farmers to reach minimum order.
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Organizer: Sarah van der Merwe</span>
-                      <Button size="sm" variant="outline">
-                        Join Group
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-semibold">Seeds Bulk Order - Eastern Cape</h3>
-                      <Badge variant="default">Complete</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Heritage vegetable seeds for spring planting. Order completed successfully.
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Organizer: Zanele Mthembu</span>
-                      <Button size="sm" variant="outline" disabled>
-                        Order Closed
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="space-y-4">
+                {groupOrders.map((group) => (
+                  <Card key={group.id} className="shadow-card">
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-semibold">{group.title}</h3>
+                        <Badge variant={group.status === 'Open' ? 'secondary' : 'default'}>
+                          {group.status === 'Open' ? `${group.participants}/${group.maxParticipants} farmers` : group.status}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {group.description}
+                      </p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Organizer: {group.organizer}</span>
+                        <div className="flex gap-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button size="sm" variant="outline">
+                                View Details
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>{group.title}</DialogTitle>
+                                <DialogDescription>Group Order Details</DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Organizer</p>
+                                  <p className="font-medium">{group.organizer}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Participants</p>
+                                  <p className="font-medium">{group.participants} / {group.maxParticipants}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Status</p>
+                                  <Badge variant={group.status === 'Open' ? 'secondary' : 'default'}>
+                                    {group.status}
+                                  </Badge>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Description</p>
+                                  <p>{group.description}</p>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          {group.status === 'Open' && !group.joined && (
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleJoinGroup(group.id)}
+                            >
+                              Join Group
+                            </Button>
+                          )}
+                          {group.joined && (
+                            <Badge variant="default">Joined</Badge>
+                          )}
+                          {group.status === 'Complete' && (
+                            <Button size="sm" variant="outline" disabled>
+                              Order Closed
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
+
+        {/* Post Discussion Modal */}
+        {selectedPost && (
+          <Dialog open={true} onOpenChange={() => setSelectedPost(null)}>
+            <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>{selectedPost.title}</DialogTitle>
+                <DialogDescription>
+                  By {selectedPost.author} • {selectedPost.location} • {selectedPost.timeAgo}
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                <div>
+                  <Badge variant="secondary" className="mb-3">{selectedPost.category}</Badge>
+                  <p className="text-muted-foreground">{selectedPost.content}</p>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {selectedPost.tags.map((tag) => (
+                      <Badge key={tag} variant="outline" className="text-xs">
+                        #{tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className={`flex items-center gap-1 ${selectedPost.liked ? 'text-red-500' : ''}`}
+                    onClick={() => handleLikePost(selectedPost.id)}
+                  >
+                    <Heart className={`h-4 w-4 ${selectedPost.liked ? 'fill-current' : ''}`} />
+                    {selectedPost.likes}
+                  </Button>
+                  <span className="text-sm text-muted-foreground">{selectedPost.replies} replies</span>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-semibold">Replies</h3>
+                  {selectedPost.repliesData.map((reply) => (
+                    <div key={reply.id} className="p-4 bg-muted/50 rounded-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-medium">{reply.author}</span>
+                        <span className="text-xs text-muted-foreground">{reply.timeAgo}</span>
+                      </div>
+                      <p className="text-sm">{reply.content}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="replyContent">Add a reply</Label>
+                  <Textarea 
+                    id="replyContent"
+                    value={newReply}
+                    onChange={(e) => setNewReply(e.target.value)}
+                    placeholder="Share your thoughts or advice..."
+                    rows={3}
+                  />
+                  <Button 
+                    onClick={() => handleAddReply(selectedPost.id)}
+                    disabled={!newReply.trim()}
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    Post Reply
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </FarmerLayout>
   );
