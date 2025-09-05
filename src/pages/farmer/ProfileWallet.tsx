@@ -52,7 +52,17 @@ export default function ProfileWallet() {
     customerRatings: 4.8,
     platformActivity: "8 months",
     paymentHistory: "Excellent",
-    totalTransactions: 45
+    totalTransactions: 45,
+    totalCompletedSales: 142,
+    totalValueSold: 24580.50,
+    averagePaymentTime: 2.3,
+    refundsDisputes: 2,
+    activeSince: "2023-05-15",
+    paymentMethod: "Bank Transfer",
+    verifiedBankAccount: true,
+    missedDeliveries: 3,
+    creditworthinessSummary: "Reliable farmer with consistent delivery and payment history",
+    recommendation: "Low-risk borrower suitable for agricultural loans up to R50,000"
   });
 
   const handleProfilePictureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,19 +80,126 @@ export default function ProfileWallet() {
     }
   };
 
+  const calculateCreditScore = () => {
+    // Calculate score based on transaction metrics
+    let score = 0;
+    
+    // On-time deliveries (30%)
+    score += (creditReport.onTimeDeliveries / 100) * 30;
+    
+    // Customer ratings (20%)
+    score += (creditReport.customerRatings / 5) * 20;
+    
+    // Payment history (25%)
+    const paymentScore = creditReport.paymentHistory === "Excellent" ? 25 : creditReport.paymentHistory === "Good" ? 20 : 15;
+    score += paymentScore;
+    
+    // Low refunds/disputes (15%)
+    const disputeScore = creditReport.refundsDisputes <= 2 ? 15 : creditReport.refundsDisputes <= 5 ? 10 : 5;
+    score += disputeScore;
+    
+    // Verified bank account (10%)
+    score += creditReport.verifiedBankAccount ? 10 : 0;
+    
+    return Math.min(Math.round(score * 10), 850); // Scale to 850 max
+  };
+
   const handleGenerateNewCreditReport = () => {
-    // Simulate generating new credit report
-    const newScore = Math.floor(Math.random() * 100) + 650; // Random score between 650-750
+    const newScore = calculateCreditScore();
+    const newStatus = newScore >= 700 ? "Good" : newScore >= 600 ? "Fair" : "Poor";
+    
     setCreditReport({
       ...creditReport,
       score: newScore,
-      status: newScore >= 700 ? "Good" : newScore >= 600 ? "Fair" : "Poor",
-      lastUpdated: new Date().toISOString().split('T')[0]
+      status: newStatus,
+      lastUpdated: new Date().toISOString().split('T')[0],
+      creditworthinessSummary: newScore >= 700 ? 
+        "Reliable farmer with consistent delivery and payment history" :
+        newScore >= 600 ? 
+        "Moderate risk farmer with room for improvement" :
+        "High risk farmer requiring financial support",
+      recommendation: newScore >= 700 ?
+        "Low-risk borrower suitable for agricultural loans up to R50,000" :
+        newScore >= 600 ?
+        "Moderate-risk borrower suitable for secured loans up to R25,000" :
+        "High-risk borrower requiring collateral for loans up to R10,000"
     });
     
     toast({
       title: "Credit Report Generated",
       description: "Your new credit report has been generated successfully.",
+    });
+  };
+
+  const [showFullReport, setShowFullReport] = useState(false);
+  const [showTransactionHistory, setShowTransactionHistory] = useState(false);
+
+  const handleDocumentUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      toast({
+        title: "Document Uploaded",
+        description: `${file.name} has been uploaded successfully for verification.`,
+      });
+    }
+  };
+
+  const handleBankingUpdate = () => {
+    toast({
+      title: "Banking Details Updated",
+      description: "Your banking information has been updated successfully.",
+    });
+  };
+
+  const handleDownloadStatement = () => {
+    // Create PDF content
+    const pdfContent = `
+FARM2CITY FINANCIAL STATEMENT
+==============================
+
+Farmer: ${farmer.name}
+Farm: ${farmer.farmName}
+Statement Period: ${new Date().toLocaleDateString()}
+
+ACCOUNT SUMMARY
+===============
+Available Balance: R${wallet.balance.toFixed(2)}
+Pending Payments: R${wallet.pendingPayments.toFixed(2)}
+Total Earnings: R${wallet.totalEarnings.toFixed(2)}
+Monthly Earnings: R${wallet.monthlyEarnings.toFixed(2)}
+
+TRANSACTION HISTORY
+==================
+${transactions.map(t => 
+  `${t.date} | ${t.description} | ${t.amount > 0 ? '+' : ''}R${t.amount.toFixed(2)} | ${t.status}`
+).join('\n')}
+
+CREDIT REPORT SUMMARY
+====================
+Credit Score: ${creditReport.score}/850
+Status: ${creditReport.status}
+Total Completed Sales: ${creditReport.totalCompletedSales}
+Total Value Sold: R${creditReport.totalValueSold.toFixed(2)}
+Average Payment Time: ${creditReport.averagePaymentTime} days
+Refunds/Disputes: ${creditReport.refundsDisputes}
+On-time Deliveries: ${creditReport.onTimeDeliveries}%
+
+Generated on: ${new Date().toLocaleString()}
+    `;
+
+    const blob = new Blob([pdfContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `farm2city-statement-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
+    toast({
+      title: "Statement Downloaded",
+      description: "Your financial statement has been downloaded successfully.",
     });
   };
 
@@ -378,11 +495,19 @@ export default function ProfileWallet() {
                     <Download className="h-4 w-4" />
                     Withdraw Funds
                   </Button>
-                  <Button variant="outline" className="w-full flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="w-full flex items-center gap-2"
+                    onClick={() => setShowTransactionHistory(true)}
+                  >
                     <History className="h-4 w-4" />
                     View Transaction History
                   </Button>
-                  <Button variant="outline" className="w-full flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="w-full flex items-center gap-2"
+                    onClick={handleDownloadStatement}
+                  >
                     <Download className="h-4 w-4" />
                     Download Statement
                   </Button>
@@ -466,9 +591,15 @@ export default function ProfileWallet() {
                   </div>
                 </div>
                 
-                <Button className="w-full md:w-auto">
-                  Update Banking Details
-                </Button>
+                <div className="flex gap-2">
+                  <Button className="flex-1" onClick={handleBankingUpdate}>
+                    Update Banking Details
+                  </Button>
+                  <Button variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Account
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -493,10 +624,23 @@ export default function ProfileWallet() {
                       <p className="font-medium">Farm Registration</p>
                       <p className="text-sm text-muted-foreground">Upload farm registration documents</p>
                     </div>
-                    <Button variant="outline" size="sm">
-                      <Upload className="h-4 w-4 mr-1" />
-                      Upload
-                    </Button>
+                    <div>
+                      <input
+                        type="file"
+                        id="farm-registration"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={handleDocumentUpload}
+                        className="hidden"
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => document.getElementById('farm-registration')?.click()}
+                      >
+                        <Upload className="h-4 w-4 mr-1" />
+                        Upload
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -536,7 +680,11 @@ export default function ProfileWallet() {
                   </div>
                   
                   <div className="flex gap-2 mt-4">
-                    <Button variant="outline" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => setShowFullReport(true)}
+                    >
                       <FileText className="h-4 w-4 mr-2" />
                       View Full Report
                     </Button>
@@ -552,6 +700,157 @@ export default function ProfileWallet() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Full Credit Report Modal */}
+        {showFullReport && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-background rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">Detailed Credit Report</h2>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowFullReport(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <div className="space-y-6">
+                  <div className="text-center p-6 bg-primary/10 rounded-lg">
+                    <div className="text-4xl font-bold text-primary mb-2">{creditReport.score}/850</div>
+                    <p className="text-lg font-semibold">{creditReport.status} Credit Score</p>
+                    <p className="text-sm text-muted-foreground mt-2">{creditReport.creditworthinessSummary}</p>
+                    <p className="text-sm text-primary mt-2 font-medium">{creditReport.recommendation}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-lg">Transaction Metrics</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span>Total completed sales:</span>
+                          <span className="font-medium">{creditReport.totalCompletedSales}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Total value sold:</span>
+                          <span className="font-medium">R{creditReport.totalValueSold.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Average payment time:</span>
+                          <span className="font-medium">{creditReport.averagePaymentTime} days</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Refunds/disputes:</span>
+                          <span className="font-medium">{creditReport.refundsDisputes}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-lg">Platform Activity</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span>Active since:</span>
+                          <span className="font-medium">{creditReport.activeSince}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Payment method:</span>
+                          <span className="font-medium">{creditReport.paymentMethod}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Verified bank account:</span>
+                          <span className="font-medium">{creditReport.verifiedBankAccount ? 'Yes' : 'No'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Missed deliveries:</span>
+                          <span className="font-medium">{creditReport.missedDeliveries}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-lg">Performance Metrics</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center p-4 bg-muted/50 rounded-lg">
+                        <div className="text-2xl font-bold text-primary">{creditReport.onTimeDeliveries}%</div>
+                        <p className="text-sm text-muted-foreground">On-time Deliveries</p>
+                      </div>
+                      <div className="text-center p-4 bg-muted/50 rounded-lg">
+                        <div className="text-2xl font-bold text-primary">{creditReport.customerRatings}/5</div>
+                        <p className="text-sm text-muted-foreground">Customer Rating</p>
+                      </div>
+                      <div className="text-center p-4 bg-muted/50 rounded-lg">
+                        <div className="text-2xl font-bold text-primary">{creditReport.totalTransactions}</div>
+                        <p className="text-sm text-muted-foreground">Total Transactions</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button className="flex-1">
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Report
+                    </Button>
+                    <Button variant="outline" onClick={handleGenerateNewCreditReport}>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Regenerate
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Transaction History Modal */}
+        {showTransactionHistory && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-background rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">Transaction History</h2>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowTransactionHistory(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <div className="space-y-4">
+                  {transactions.map((transaction) => (
+                    <div key={transaction.id} className="flex justify-between items-center p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <p className="font-medium">{transaction.description}</p>
+                        <p className="text-sm text-muted-foreground">Transaction ID: {transaction.id}</p>
+                        <p className="text-sm text-muted-foreground">Date: {transaction.date}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-lg font-bold ${transaction.amount > 0 ? 'text-primary' : 'text-muted-foreground'}`}>
+                          {transaction.amount > 0 ? '+' : ''}R{Math.abs(transaction.amount).toFixed(2)}
+                        </p>
+                        <Badge variant={transaction.status === 'completed' ? 'default' : 'secondary'}>
+                          {transaction.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button className="flex-1" onClick={handleDownloadStatement}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Statement
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </FarmerLayout>
   );
