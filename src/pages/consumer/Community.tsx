@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   Heart, 
   MessageCircle, 
@@ -15,10 +16,16 @@ import {
   Users, 
   Search,
   Camera,
-  Award
+  Award,
+  UserPlus,
+  Eye
 } from "lucide-react";
 import { toast } from "sonner";
 import farmersImg from "@/assets/farmers-tech.jpg";
+import sustainableJourney from "@/assets/stories/sustainable-journey.jpg";
+import heritageStory from "@/assets/stories/heritage-story.jpg";
+import innovationStory from "@/assets/stories/innovation-story.jpg";
+import communityStory from "@/assets/stories/community-story.jpg";
 
 interface FarmerProfile {
   id: string;
@@ -55,10 +62,23 @@ interface Event {
   description: string;
   attendees: number;
   maxAttendees?: number;
+  joined?: boolean;
+}
+
+interface Story {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  author: string;
+  image: string;
+  date: string;
 }
 
 export default function Community() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [followedFarmers, setFollowedFarmers] = useState<string[]>([]);
+  const [joinedEvents, setJoinedEvents] = useState<string[]>([]);
   const [posts, setPosts] = useState<CommunityPost[]>([
     {
       id: "1",
@@ -107,7 +127,7 @@ export default function Community() {
     }
   ]);
 
-  const [events] = useState<Event[]>([
+  const [events, setEvents] = useState<Event[]>([
     {
       id: "1",
       title: "Sustainable Farming Workshop",
@@ -116,7 +136,8 @@ export default function Community() {
       location: "Community Center, Sacramento",
       description: "Learn about sustainable farming practices and modern agricultural techniques",
       attendees: 45,
-      maxAttendees: 60
+      maxAttendees: 60,
+      joined: false
     },
     {
       id: "2",
@@ -126,7 +147,47 @@ export default function Community() {
       location: "Central Park, Downtown",
       description: "Celebrate the harvest season with local farmers, fresh produce, and community activities",
       attendees: 234,
-      maxAttendees: 500
+      maxAttendees: 500,
+      joined: false
+    }
+  ]);
+
+  const [stories] = useState<Story[]>([
+    {
+      id: "1",
+      title: "From Wasteland to Wonder",
+      summary: "How Sarah transformed 50 acres of barren land into a thriving organic farm using sustainable practices.",
+      content: "When Sarah Johnson first laid eyes on the 50 acres of neglected farmland outside Sacramento, most people would have seen an impossible challenge. The soil was depleted, the irrigation system was broken, and weeds had taken over everything. But Sarah saw potential.\n\n'I knew it would take years to restore this land,' Sarah recalls, 'but I also knew that with patience and the right techniques, we could create something beautiful.'\n\nThe transformation began with soil restoration. Sarah spent the first year composting organic matter, introducing beneficial microorganisms, and carefully planning crop rotations. She installed solar-powered irrigation systems and built greenhouses using recycled materials.\n\nToday, Green Valley Farm produces over 200 varieties of organic vegetables and herbs, supplying 15 local restaurants and three farmers markets. The farm has become a model for sustainable agriculture, hosting workshops for other farmers and urban gardening enthusiasts.\n\n'The most rewarding part isn't the financial success,' Sarah explains, 'it's knowing that we're healing the land and providing healthy food for our community. Every tomato we grow is a small victory for sustainable farming.'",
+      author: "Sarah Johnson - Green Valley Farm",
+      image: sustainableJourney,
+      date: "August 2024"
+    },
+    {
+      id: "2",
+      title: "Three Generations of Wisdom",
+      summary: "Miguel shares the traditional farming techniques passed down through his family.",
+      content: "The Rodriguez family has been farming the same land in Fresno for over 80 years. What started with Miguel's grandfather arriving from Mexico with nothing but determination has grown into one of the region's most respected citrus operations.\n\n'My grandfather used to say that the land teaches you if you listen,' Miguel explains as he walks through the orange groves that his family has tended for decades. 'He taught my father, my father taught me, and now I'm teaching my children.'\n\nThe farm has survived droughts, economic downturns, and market changes by adapting while staying true to core principles. They still use many traditional techniques, like companion planting and natural pest control methods that Miguel's grandfather brought from his homeland.\n\n'We've incorporated modern technology where it makes sense,' Miguel says, pointing to the drip irrigation system they installed five years ago. 'But we never forget that farming is about understanding the rhythm of the seasons and respecting the land.'\n\nToday, Sunny Acres produces some of the region's finest oranges, lemons, and stone fruits. Miguel's children are actively involved in the operation, ensuring that the family's farming wisdom will continue for another generation.",
+      author: "Miguel Rodriguez - Sunny Acres",
+      image: heritageStory,
+      date: "July 2024"
+    },
+    {
+      id: "3",
+      title: "The Tech-Forward Farm",
+      summary: "Emily shows how modern technology is revolutionizing small-scale farming.",
+      content: "At first glance, Riverside Gardens might look like any other small farm. But look closer, and you'll see the future of agriculture unfolding in real-time. Emily Chen has transformed her 15-acre operation into a showcase of agricultural innovation.\n\n'I believe technology should serve the farmer, not replace them,' Emily explains as she checks her phone for real-time soil moisture data from sensors placed throughout her fields. 'These tools help me make better decisions and use resources more efficiently.'\n\nThe farm uses precision agriculture techniques that would make much larger operations envious. Drones monitor crop health and identify problem areas before they're visible to the naked eye. Automated hydroponic systems grow leafy greens year-round in climate-controlled greenhouses.\n\nBut Emily's favorite innovation is her farm management app, which she developed herself. It tracks everything from planting schedules to harvest yields, helping her optimize production and reduce waste.\n\n'Last year, we increased our yield by 40% while using 30% less water,' Emily proudly reports. 'Technology isn't just changing how we farm – it's helping us farm better.'\n\nRiverside Gardens now supplies high-end restaurants and specialty grocery stores throughout Northern California, proving that small farms can compete in the modern marketplace.",
+      author: "Emily Chen - Riverside Gardens",
+      image: innovationStory,
+      date: "September 2024"
+    },
+    {
+      id: "4",
+      title: "Building Community Through Food",
+      summary: "How the Farm2City platform is connecting urban consumers with local farmers.",
+      content: "The farmers market in downtown Sacramento buzzes with activity every Saturday morning. Vendors arrange their colorful displays of fresh produce while early customers select the best picks of the week. But this isn't just about buying and selling – it's about building community.\n\n'When I started farming 10 years ago, I struggled to reach customers directly,' remembers Marcus Thompson, who grows heirloom vegetables just outside the city. 'The Farm2City platform changed everything for me.'\n\nFarm2City has created more than just an online marketplace. It's built a community where farmers and consumers connect, share stories, and learn from each other. Customers can visit farms, participate in harvest activities, and understand where their food comes from.\n\n'We've had families come out for our 'Pick Your Own' days,' Marcus continues. 'Kids who thought carrots came from the supermarket suddenly understand that food comes from the soil. Parents learn about seasonal eating and sustainable practices.'\n\nThe platform has facilitated over 10,000 direct farmer-to-consumer transactions in the past year alone. But more importantly, it's fostering relationships that go beyond commerce.\n\n'Food is connection,' explains platform co-founder Lisa Park. 'When people know their farmer, they value their food more. When farmers know their customers, they take even more pride in their work. That's how we build a sustainable food system.'",
+      author: "Farm2City Community",
+      image: communityStory,
+      date: "August 2024"
     }
   ]);
 
@@ -235,11 +296,23 @@ export default function Community() {
   };
 
   const handleFollow = (farmerId: string) => {
-    toast.success("Following farmer!");
+    setFollowedFarmers(prev => 
+      prev.includes(farmerId) 
+        ? prev.filter(id => id !== farmerId)
+        : [...prev, farmerId]
+    );
+    const isFollowing = followedFarmers.includes(farmerId);
+    toast.success(isFollowing ? "Unfollowed farmer!" : "Following farmer!");
   };
 
   const joinEvent = (eventId: string) => {
-    toast.success("Successfully joined event!");
+    setEvents(prev => prev.map(event => 
+      event.id === eventId 
+        ? { ...event, joined: !event.joined, attendees: event.joined ? event.attendees - 1 : event.attendees + 1 }
+        : event
+    ));
+    const event = events.find(e => e.id === eventId);
+    toast.success(event?.joined ? "Left event!" : "Successfully joined event!");
   };
 
   return (
@@ -407,8 +480,13 @@ export default function Community() {
                             <p className="font-medium text-sm">{farmer.name}</p>
                             <p className="text-xs text-muted-foreground">{farmer.farm}</p>
                           </div>
-                          <Button size="sm" variant="outline" onClick={() => handleFollow(farmer.id)}>
-                            Follow
+                          <Button 
+                            size="sm" 
+                            variant={followedFarmers.includes(farmer.id) ? "default" : "outline"} 
+                            onClick={() => handleFollow(farmer.id)}
+                          >
+                            <UserPlus className="h-3 w-3 mr-1" />
+                            {followedFarmers.includes(farmer.id) ? "Following" : "Follow"}
                           </Button>
                         </div>
                       ))}
@@ -500,8 +578,13 @@ export default function Community() {
                           </div>
                           <div>⭐ {farmer.rating}</div>
                         </div>
-                        <Button size="sm" onClick={() => handleFollow(farmer.id)}>
-                          Follow
+                        <Button 
+                          size="sm" 
+                          variant={followedFarmers.includes(farmer.id) ? "default" : "outline"} 
+                          onClick={() => handleFollow(farmer.id)}
+                        >
+                          <UserPlus className="h-3 w-3 mr-1" />
+                          {followedFarmers.includes(farmer.id) ? "Following" : "Follow"}
                         </Button>
                       </div>
                     </CardContent>
@@ -544,10 +627,13 @@ export default function Community() {
                         <p className="text-sm">{event.description}</p>
                         <Button 
                           className="w-full" 
+                          variant={event.joined ? "secondary" : "default"}
                           onClick={() => joinEvent(event.id)}
-                          disabled={event.maxAttendees ? event.attendees >= event.maxAttendees : false}
+                          disabled={event.maxAttendees ? event.attendees >= event.maxAttendees && !event.joined : false}
                         >
-                          {event.maxAttendees && event.attendees >= event.maxAttendees ? 'Event Full' : 'Join Event'}
+                          {event.joined ? 'Leave Event' : 
+                           event.maxAttendees && event.attendees >= event.maxAttendees ? 'Event Full' : 
+                           'Join Event'}
                         </Button>
                       </div>
                     </CardContent>
@@ -558,107 +644,68 @@ export default function Community() {
 
             <TabsContent value="stories" className="space-y-6 mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card className="shadow-card">
-                  <div className="relative">
-                    <img 
-                      src={farmersImg} 
-                      alt="Farm story" 
-                      className="w-full h-48 object-cover rounded-t-lg"
-                    />
-                    <div className="absolute top-2 right-2">
-                      <Badge variant="secondary">Featured</Badge>
-                    </div>
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="text-lg">From City to Farm: A Journey</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      How Sarah left her corporate job to start Green Valley Farm and became one of the region's most successful organic farmers.
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="w-6 h-6">
-                          <AvatarFallback className="text-xs">SJ</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm">Sarah Johnson</span>
+                {stories.map((story) => (
+                  <Card key={story.id} className="shadow-card">
+                    <div className="relative">
+                      <img 
+                        src={story.image} 
+                        alt={story.title} 
+                        className="w-full h-48 object-cover rounded-t-lg"
+                      />
+                      <div className="absolute top-2 right-2">
+                        <Badge variant="secondary">{story.date}</Badge>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => toast.success("Opening full story...")}
-                      >
-                        Read More
-                      </Button>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-card">
-                  <div className="relative">
-                    <img 
-                      src={farmersImg} 
-                      alt="Farm story" 
-                      className="w-full h-48 object-cover rounded-t-lg"
-                    />
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Three Generations of Farming</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Miguel shares the wisdom passed down through three generations of his family's farming tradition and how they've adapted to modern challenges.
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="w-6 h-6">
-                          <AvatarFallback className="text-xs">MR</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm">Miguel Rodriguez</span>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{story.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {story.summary}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="w-6 h-6">
+                            <AvatarFallback className="text-xs">
+                              {story.author.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm">{story.author}</span>
+                        </div>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline">
+                              <Eye className="h-3 w-3 mr-1" />
+                              Read More
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle className="text-2xl mb-2">{story.title}</DialogTitle>
+                              <div className="text-sm text-muted-foreground mb-4">
+                                By {story.author} • {story.date}
+                              </div>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <img 
+                                src={story.image} 
+                                alt={story.title} 
+                                className="w-full h-64 object-cover rounded-lg"
+                              />
+                              <div className="prose prose-sm max-w-none">
+                                {story.content.split('\n\n').map((paragraph, index) => (
+                                  <p key={index} className="mb-4 leading-relaxed text-sm">
+                                    {paragraph}
+                                  </p>
+                                ))}
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => toast.success("Opening full story...")}
-                      >
-                        Read More
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-card">
-                  <div className="relative">
-                    <img 
-                      src={farmersImg} 
-                      alt="Farm story" 
-                      className="w-full h-48 object-cover rounded-t-lg"
-                    />
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Tech Meets Tradition</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Emily's innovative approach to farming combines cutting-edge technology with sustainable practices to maximize yield while protecting the environment.
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="w-6 h-6">
-                          <AvatarFallback className="text-xs">EC</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm">Emily Chen</span>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => toast.success("Opening full story...")}
-                      >
-                        Read More
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </TabsContent>
           </Tabs>
