@@ -82,6 +82,26 @@ export default function MyProfile() {
     }));
   };
 
+  const handleDeleteAccount = () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed."
+    );
+    
+    if (confirmed) {
+      // Remove user data from local storage
+      localStorage.removeItem("farm2city_token");
+      localStorage.removeItem("farm2city_role");
+      localStorage.removeItem("farm2city_user");
+      localStorage.removeItem("consumerOrders");
+      localStorage.removeItem("cartItems");
+      
+      toast.success("Account deleted successfully");
+      
+      // Redirect to home page
+      window.location.href = "/";
+    }
+  };
+
   return (
     <ConsumerLayout currentPage="My Profile">
       <div className="min-h-screen bg-muted/30 p-6">
@@ -389,27 +409,27 @@ export default function MyProfile() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="security" className="space-y-6 mt-6">
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Account Security
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center p-4 border rounded-lg">
-                    <div>
-                      <p className="font-medium">Password</p>
-                      <p className="text-sm text-muted-foreground">Last changed 3 months ago</p>
-                    </div>
-                    <Button variant="outline">Change Password</Button>
-                  </div>
-                  <div className="flex justify-between items-center p-4 border rounded-lg">
-                    <div>
-                      <p className="font-medium">Two-Factor Authentication</p>
-                      <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
-                    </div>
+             <TabsContent value="security" className="space-y-6 mt-6">
+               <Card className="shadow-card">
+                 <CardHeader>
+                   <CardTitle className="flex items-center gap-2">
+                     <Shield className="h-5 w-5" />
+                     Account Security
+                   </CardTitle>
+                 </CardHeader>
+                 <CardContent className="space-y-4">
+                   <div className="flex justify-between items-center p-4 border rounded-lg">
+                     <div>
+                       <p className="font-medium">Password</p>
+                       <p className="text-sm text-muted-foreground">Last changed 3 months ago</p>
+                     </div>
+                     <Button variant="outline">Change Password</Button>
+                   </div>
+                   <div className="flex justify-between items-center p-4 border rounded-lg">
+                     <div>
+                       <p className="font-medium">Two-Factor Authentication</p>
+                       <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
+                     </div>
                     <Button variant="outline">Enable 2FA</Button>
                   </div>
                   <div className="flex justify-between items-center p-4 border rounded-lg">
@@ -439,7 +459,7 @@ export default function MyProfile() {
                       <p className="font-medium">Delete Account</p>
                       <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
                     </div>
-                    <Button variant="destructive">Delete Account</Button>
+                    <Button variant="destructive" onClick={handleDeleteAccount}>Delete Account</Button>
                   </div>
                 </CardContent>
               </Card>

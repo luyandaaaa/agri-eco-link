@@ -198,7 +198,21 @@ export default function Security() {
     toast.success("Security setting updated");
   };
 
+  const [securityEventsState, setSecurityEventsState] = useState(securityEvents);
+
   const resolveEvent = (eventId: string) => {
+    setSecurityEventsState(prev => {
+      const updated = prev.map(event => 
+        event.id === eventId 
+          ? { ...event, status: "resolved" as const }
+          : event
+      );
+      
+      // Save to localStorage
+      localStorage.setItem("securityEvents", JSON.stringify(updated));
+      return updated;
+    });
+    
     toast.success("Security event marked as resolved");
   };
 
@@ -329,8 +343,8 @@ export default function Security() {
                     <CardTitle>Recent Security Events</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {securityEvents.slice(0, 3).map((event) => (
+                     <div className="space-y-4">
+                       {securityEventsState.slice(0, 3).map((event) => (
                         <div key={event.id} className="flex items-center gap-3 p-3 border rounded-lg">
                           <div className="p-2 bg-muted rounded-lg">
                             {getEventIcon(event.type)}
@@ -385,8 +399,8 @@ export default function Security() {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {securityEvents.map((event) => (
+               <div className="space-y-4">
+                 {securityEventsState.map((event) => (
                   <Card key={event.id} className="shadow-card">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,11 +48,28 @@ export default function AdminDashboard() {
   };
 
 
-  const pendingApplications = [
+  const [pendingApplications, setPendingApplications] = useState([
     { id: 1, name: "Thabo Mokoena", location: "Limpopo", crops: "Maize, Beans", status: "pending" },
     { id: 2, name: "Sarah Van Der Merwe", location: "Western Cape", crops: "Grapes, Olives", status: "pending" },
     { id: 3, name: "James Nkomo", location: "KwaZulu-Natal", crops: "Avocados, Macadamias", status: "pending" },
-  ];
+  ]);
+
+  const handleFarmerAction = (applicationId: number, action: "approve" | "reject") => {
+    setPendingApplications(prev => {
+      const updated = prev.map(app => 
+        app.id === applicationId 
+          ? { ...app, status: action === "approve" ? "approved" : "rejected" }
+          : app
+      ).filter(app => app.status === "pending"); // Remove processed applications
+      
+      // Save to localStorage
+      localStorage.setItem("farmerApplications", JSON.stringify(updated));
+      return updated;
+    });
+    
+    const application = pendingApplications.find(app => app.id === applicationId);
+    toast.success(`${application?.name} has been ${action}d`);
+  };
 
   return (
     <AdminLayout currentPage="Dashboard">
@@ -128,11 +146,19 @@ export default function AdminDashboard() {
                     <p className="text-xs text-muted-foreground">Crops: {application.crops}</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="default">
+                    <Button 
+                      size="sm" 
+                      variant="default"
+                      onClick={() => handleFarmerAction(application.id, "approve")}
+                    >
                       <CheckCircle className="h-4 w-4 mr-1" />
                       Approve
                     </Button>
-                    <Button size="sm" variant="destructive">
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => handleFarmerAction(application.id, "reject")}
+                    >
                       <XCircle className="h-4 w-4 mr-1" />
                       Reject
                     </Button>
@@ -156,7 +182,11 @@ export default function AdminDashboard() {
               <p className="text-sm text-muted-foreground mb-4">
                 Manage farmer and consumer accounts, verify profiles.
               </p>
-              <Button variant="hero" className="w-full">
+              <Button 
+                variant="hero" 
+                className="w-full"
+                onClick={() => navigate("/admin/user-management")}
+              >
                 Manage Users
               </Button>
             </CardContent>
@@ -176,7 +206,11 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="destructive">3 Active</Badge>
               </div>
-              <Button variant="secondary" className="w-full">
+              <Button 
+                variant="secondary" 
+                className="w-full"
+                onClick={() => navigate("/admin/dispute-resolution")}
+              >
                 View Disputes
               </Button>
             </CardContent>
@@ -193,7 +227,11 @@ export default function AdminDashboard() {
               <p className="text-sm text-muted-foreground mb-4">
                 View detailed platform metrics and performance.
               </p>
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => navigate("/admin/analytics")}
+              >
                 View Analytics
               </Button>
             </CardContent>

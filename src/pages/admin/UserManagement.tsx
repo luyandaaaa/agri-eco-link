@@ -57,8 +57,7 @@ export default function UserManagement() {
   const [filterRole, setFilterRole] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-
-  const users: User[] = [
+  const [users, setUsers] = useState<User[]>([
     {
       id: "1",
       name: "John Smith",
@@ -117,7 +116,7 @@ export default function UserManagement() {
       revenue: 1890.25,
       verificationStatus: "verified"
     }
-  ];
+  ]);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -129,13 +128,39 @@ export default function UserManagement() {
   });
 
   const handleUserAction = (userId: string, action: string) => {
+    setUsers(prev => {
+      let updatedUsers = prev.map(user => {
+        if (user.id === userId) {
+          switch (action) {
+            case "approve":
+              return { ...user, status: "active" as const };
+            case "suspend":
+              return { ...user, status: "suspended" as const };
+            case "activate":
+              return { ...user, status: "active" as const };
+            case "verify":
+              return { ...user, verificationStatus: "verified" as const };
+            default:
+              return user;
+          }
+        }
+        return user;
+      });
+
+      if (action === "suspend") {
+        updatedUsers = updatedUsers.filter(user => user.id !== userId);
+      }
+
+      return updatedUsers;
+    });
+
     const user = users.find(u => u.id === userId);
     switch (action) {
       case "approve":
         toast.success(`${user?.name} has been approved`);
         break;
       case "suspend":
-        toast.success(`${user?.name} has been suspended`);
+        toast.success(`${user?.name} has been suspended and removed`);
         break;
       case "activate":
         toast.success(`${user?.name} has been activated`);
